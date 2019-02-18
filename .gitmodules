@@ -1,0 +1,3 @@
+[submodule "network-hardware-video-encoder"]
+	path = network-hardware-video-encoder
+	url = https://github.com/bmegli/network-hardware-video-encoder.git
