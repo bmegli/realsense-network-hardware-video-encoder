@@ -132,12 +132,13 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 {
 	if(argc < 8)
 	{
-		cerr << "Usage: " << argv[0] << " <host> <port> <color/ir> <width> <height> <framerate> <seconds> [device]" << endl;
+		cerr << "Usage: " << argv[0] << " <host> <port> <color/ir> <width> <height> <framerate> <seconds> [device] [bitrate]" << endl;
 		cerr << endl << "examples: " << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 color 640 360 30 5" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128" << endl;
+		cerr << argv[0] << " 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000" << endl;
 
 		return -1;
 	}
@@ -165,6 +166,9 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	
 	hw_config->device = argv[8]; //NULL as last argv argument, or device path
 	
+	if(argc > 9)
+		hw_config->bit_rate = atoi(argv[9]);
+		
 	return 0;
 }
  
