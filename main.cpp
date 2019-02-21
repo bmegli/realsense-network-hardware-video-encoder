@@ -9,7 +9,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  */
- 
+
 // Network Hardware Video Encoder
 #include "nhve.h"
 
@@ -37,7 +37,7 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input);
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config);
 
 int main(int argc, char* argv[])
-{	
+{
 	//struct nhve_hw_config hw_config = {WIDTH, HEIGHT, FRAMERATE, DEVICE, PIXEL_FORMAT, PROFILE, BFRAMES, BITRATE};
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 
 	if( (streamer = nhve_init(&net_config, &hw_config)) == NULL )
 		return hint_user_on_failure(argv);
-	
+
 	bool status=main_loop(user_input, realsense, streamer);
 
 	nhve_close(streamer);
@@ -73,13 +73,13 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	int f;
 	nhve_frame frame = {0};
 	uint8_t *color_data = NULL; //data of dummy color plane for NV12
-		
+
 	for(f = 0; f < frames; ++f)
 	{
 		rs2::frameset frameset = realsense.wait_for_frames();
-		
-		rs2::video_frame video_frame = input.stream_color ? frameset.get_color_frame() : frameset.get_infrared_frame(1);		
-	
+
+		rs2::video_frame video_frame = input.stream_color ? frameset.get_color_frame() : frameset.get_infrared_frame(1);
+
 		if(!input.stream_color && !color_data)
 		{   //prepare dummy color plane for NV12 format, half the size of Y
 			//we can't alloc it in advance, this is the first time we know realsense stride
@@ -87,12 +87,12 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 			color_data = new uint8_t[size];
 			memset(color_data, 128, size);
 		}
-	
+
 		frame.linesize[0] =  video_frame.get_stride_in_bytes();
 		frame.data[0] = (uint8_t*) video_frame.get_data();
-		
+
 		//if we are streaming infrared we have 2 planes (luminance and color)
-		frame.linesize[1] = input.stream_color ? 0 : frame.linesize[0]; 
+		frame.linesize[1] = input.stream_color ? 0 : frame.linesize[0];
 		frame.data[1] = color_data; //dummy color plane for infrared
 
 		frame.framenumber = f;
@@ -101,12 +101,12 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 		{
 			cerr << "failed to send" << endl;
 			break;
-		}				
+		}
 	}
-	
+
 	//flush the streamer by sending NULL frame
 	nhve_send_frame(streamer, NULL);
-		
+
 	delete [] color_data;
 
 	//all the requested frames processed?
@@ -116,9 +116,9 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 void init_realsense(rs2::pipeline& pipe, const input_args& input)
 {
 	rs2::config cfg;
-	
+
 	if(input.stream_color)
-		cfg.enable_stream(RS2_STREAM_COLOR, input.width, input.height, RS2_FORMAT_YUYV, input.framerate);	
+		cfg.enable_stream(RS2_STREAM_COLOR, input.width, input.height, RS2_FORMAT_YUYV, input.framerate);
 	else
 	{// depth stream seems to be required for infrared to work
 		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
@@ -145,9 +145,9 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 	net_config->ip = argv[1];
 	net_config->port = atoi(argv[2]);
-	
+
 	input->stream_color = argv[3][0] == 'c';
-	
+
 	//native format of Realsense RGB sensor is YUYV (YUY2, YUYV422)
 	//see https://github.com/IntelRealSense/librealsense/issues/3042
 
@@ -161,17 +161,17 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	hw_config->width = input->width = atoi(argv[4]);
 	hw_config->height = input->height = atoi(argv[5]);
 	hw_config->framerate = input->framerate = atoi(argv[6]);
-	
+
 	input->seconds = atoi(argv[7]);
-	
+
 	hw_config->device = argv[8]; //NULL as last argv argument, or device path
-	
+
 	if(argc > 9)
 		hw_config->bit_rate = atoi(argv[9]);
-		
+
 	return 0;
 }
- 
+
 int hint_user_on_failure(char *argv[])
 {
 	cerr << "unable to initalize, try to specify device e.g:" << endl << endl;
