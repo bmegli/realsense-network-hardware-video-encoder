@@ -1,11 +1,12 @@
-# Realsense Network Hardware Video Encoder C library
+# Realsense Network Hardware Video Encoder
 
 Realsense hardware video encoding and streaming over custom [MLSP](https://github.com/bmegli/minimal-latency-streaming-protocol) protocol.
 See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer.
 
-The intent behind library:
+The intent behind the program:
+- private experiments
 - minimize video latency
-- minimize CPU usage (hardware encoding and color conversions)
+- minimize CPU usage (hardware encoding, color conversions)
 
 ## Platforms 
 
@@ -27,7 +28,7 @@ Tested on LattePanda Alpha and i7-7820HK laptop.
 
 ## Dependencies
 
-Library depends on:
+This program depends on:
 - [librealsense2](https://github.com/IntelRealSense/librealsense) 
 - [NHVE Network Hardware Video Encoder](https://github.com/bmegli/network-hardware-video-encoder)
 	- [HVE Hardware Video Encoder](https://github.com/bmegli/hardware-video-encoder)
@@ -58,7 +59,7 @@ sudo apt-get install git
 # clone the repository with *RECURSIVE* for submodules
 git clone --recursive https://github.com/bmegli/realsense-network-hardware-video-encoder.git
 
-# finally build the library and examples
+# finally build the program
 cd realsense-network-hardware-video-encoder.git
 mkdir build
 cd build
