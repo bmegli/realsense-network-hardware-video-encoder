@@ -28,10 +28,13 @@ Tested on LattePanda Alpha and i7-7820HK laptop.
 ## Dependencies
 
 Library depends on:
+- [librealsense2](https://github.com/IntelRealSense/librealsense) 
 - [NHVE Network Hardware Video Encoder](https://github.com/bmegli/network-hardware-video-encoder)
 	- [HVE Hardware Video Encoder](https://github.com/bmegli/hardware-video-encoder)
 		- FFmpeg `avcodec` and `avutil` (at least 3.4 version)
 	- [MLSP Minimal Latency Streaming Protocol](https://github.com/bmegli/minimal-latency-streaming-protocol)
+
+Install RealSense™ SDK 2.0 as described on [github](https://github.com/IntelRealSense/librealsense) 
 
 NHVE and its dependencies are included as submodules so you only need to satifisy HVE dependencies.
 
