@@ -65,7 +65,7 @@ make
 
 ## Running
 
-Stream procedurally generated H.264 video over UDP (moving through greyscale)
+Stream Realsense color/infrared video over UDP.
 
 ```bash
 # Usage: ./realsense-nhve <host> <port> <color/ir> <width> <height> <framerate> <seconds> [device] [bitrate]
@@ -79,16 +79,6 @@ Stream procedurally generated H.264 video over UDP (moving through greyscale)
 You may need to specify VAAPI device if you have more than one (e.g. NVIDIA GPU + Intel CPU).
 
 If you don't have receiving end you will just see if hardware encoding worked/didn't work.
-
-## Compiling your code
-
-### IDE (recommended)
-
-The simplest way is to copy headers and sources of HVE, MLSP and NHVE to your project and link with avcodec & avutil.
-
-### CMake
-
-See [realsense-network-hardware-video-encoder](https://github.com/bmegli/realsense-network-hardware-video-encoder) as example.
 
 ## License
 
