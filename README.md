@@ -1,7 +1,10 @@
 # Realsense Network Hardware Video Encoder
 
 Realsense hardware video encoding and streaming over custom [MLSP](https://github.com/bmegli/minimal-latency-streaming-protocol) protocol.
+
 See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer.
+
+See [hardware-video-streaming](https://github.com/bmegli/hardware-video-streaming) for other related projects.
 
 The intent behind the program:
 - private experiments
