@@ -2,7 +2,12 @@
 
 Realsense hardware video encoding and streaming over custom [MLSP](https://github.com/bmegli/minimal-latency-streaming-protocol) protocol.
 
-See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer.
+This includes streaming:
+- color (H.264, HEVC Main)
+- infrared (H.264, HEVC Main)
+- depth (HEVC Main10)
+
+See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer (color and infrared).
 
 See [hardware-video-streaming](https://github.com/bmegli/hardware-video-streaming) for other related projects.
 
@@ -72,7 +77,7 @@ make
 
 ## Running
 
-Stream Realsense color/infrared video over UDP.
+Stream H.264 Realsense color/infrared video over UDP.
 
 ```bash
 # Usage: ./realsense-nhve <host> <port> <color/ir> <width> <height> <framerate> <seconds> [device] [bitrate]
@@ -81,6 +86,20 @@ Stream Realsense color/infrared video over UDP.
 #./realsense-nhve-h264 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
 #./realsense-nhve-h264 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
 #./realsense-nhve-h264 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
+```
+
+Stream HEVC Main Realsense color/infrared video or HEVC Main10 depth data over UDP.
+
+```bash
+# Usage: ./realsense-nhve <host> <port> <color/ir> <width> <height> <framerate> <seconds> [device] [bitrate]
+./realsense-nhve-hevc10 127.0.0.1 9766 color 640 360 30 5
+#./realsense-nhve-hevc10 127.0.0.1 9766 infrared 640 360 30 5
+#./realsense-nhve-hevc10 127.0.0.1 9766 depth 640 360 30 5
+#./realsense-nhve-hevc10 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-hevc10 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-hevc10 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-hevc10 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
+#./realsense-nhve-hevc10 192.168.0.125 9766 depth 848 480 30 50 /dev/dri/renderD128 2000000
 ```
 
 You may need to specify VAAPI device if you have more than one (e.g. NVIDIA GPU + Intel CPU).
