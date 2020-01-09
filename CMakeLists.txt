@@ -8,9 +8,9 @@ project(
 add_subdirectory(network-hardware-video-encoder)
 
 # this is our main target
-add_executable(realsense-nhve main.cpp)
-target_include_directories(realsense-nhve PRIVATE network-hardware-video-encoder)
-target_link_libraries(realsense-nhve nhve realsense2)
+add_executable(realsense-nhve-h264 rnhve_h264.cpp)
+target_include_directories(realsense-nhve-h264 PRIVATE network-hardware-video-encoder)
+target_link_libraries(realsense-nhve-h264 nhve realsense2)
 
 
 

@@ -76,11 +76,11 @@ Stream Realsense color/infrared video over UDP.
 
 ```bash
 # Usage: ./realsense-nhve <host> <port> <color/ir> <width> <height> <framerate> <seconds> [device] [bitrate]
-./realsense-nhve 127.0.0.1 9766 color 640 360 30 5
-#./realsense-nhve 127.0.0.1 9766 infrared 640 360 30 5
-#./realsense-nhve 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
-#./realsense-nhve 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
-#./realsense-nhve 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
+./realsense-nhve-h264 127.0.0.1 9766 color 640 360 30 5
+#./realsense-nhve-h264 127.0.0.1 9766 infrared 640 360 30 5
+#./realsense-nhve-h264 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-h264 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-h264 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
 ```
 
 You may need to specify VAAPI device if you have more than one (e.g. NVIDIA GPU + Intel CPU).

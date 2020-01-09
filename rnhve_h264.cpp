@@ -38,7 +38,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 int main(int argc, char* argv[])
 {
-	//struct nhve_hw_config hw_config = {WIDTH, HEIGHT, FRAMERATE, DEVICE, PIXEL_FORMAT, PROFILE, BFRAMES, BITRATE};
+	//struct nhve_hw_config hw_config = {WIDTH, HEIGHT, FRAMERATE, DEVICE, ENCODER, PIXEL_FORMAT, PROFILE, BFRAMES, BITRATE};
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
 	struct nhve_hw_config hw_config = {0};
@@ -157,7 +157,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//- Realsense IR sensor Y8 with VAAPI NV12 (luminance plane with dummy color plane)
 	//this way we always have optimal format at least on one side and hardware conversion on other
 	hw_config->pixel_format = input->stream_color ? "yuyv422" : "nv12";
-
+	hw_config->encoder = "h264_vaapi";
 	hw_config->width = input->width = atoi(argv[4]);
 	hw_config->height = input->height = atoi(argv[5]);
 	hw_config->framerate = input->framerate = atoi(argv[6]);
