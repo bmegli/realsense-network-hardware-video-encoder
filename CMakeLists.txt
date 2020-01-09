@@ -12,8 +12,8 @@ add_executable(realsense-nhve-h264 rnhve_h264.cpp)
 target_include_directories(realsense-nhve-h264 PRIVATE network-hardware-video-encoder)
 target_link_libraries(realsense-nhve-h264 nhve realsense2)
 
-add_executable(realsense-nhve-hevc10 rnhve_hevc10.cpp)
-target_include_directories(realsense-nhve-hevc10 PRIVATE network-hardware-video-encoder)
-target_link_libraries(realsense-nhve-hevc10 nhve realsense2)
+add_executable(realsense-nhve-hevc rnhve_hevc.cpp)
+target_include_directories(realsense-nhve-hevc PRIVATE network-hardware-video-encoder)
+target_link_libraries(realsense-nhve-hevc nhve realsense2)
 
 

@@ -93,15 +93,15 @@ Stream Realsense:
 - depth with HEVC Main10
 
 ```bash
-# Usage: ./realsense-nhve-hevc10 <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate]
-./realsense-nhve-hevc10 127.0.0.1 9766 color 640 360 30 5
-#./realsense-nhve-hevc10 127.0.0.1 9766 infrared 640 360 30 5
-#./realsense-nhve-hevc10 127.0.0.1 9766 depth 640 360 30 5
-#./realsense-nhve-hevc10 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
-#./realsense-nhve-hevc10 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
-#./realsense-nhve-hevc10 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128
-#./realsense-nhve-hevc10 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
-#./realsense-nhve-hevc10 192.168.0.125 9766 depth 848 480 30 50 /dev/dri/renderD128 2000000
+# Usage: ./realsense-nhve-hevc <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate]
+./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5
+#./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5
+#./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5
+#./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-hevc 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
+#./realsense-nhve-hevc 192.168.0.125 9766 depth 848 480 30 50 /dev/dri/renderD128 2000000
 ```
 
 You may need to specify VAAPI device if you have more than one (e.g. NVIDIA GPU + Intel CPU).
