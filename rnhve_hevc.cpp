@@ -218,7 +218,7 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 	rs2_intrinsics i = depth_stream.get_intrinsics();
 
 	cout << "The camera intrinsics:" << endl;
-	cout << "-ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
+	cout << "-width=" << i.width << " height=" << i.height << " ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
 	cout << "-distortion model " << i.model << " [" <<
 		i.coeffs[0] << "," << i.coeffs[2] << "," << i.coeffs[3] << "," << i.coeffs[4] << "]" << endl;
 }
