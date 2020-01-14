@@ -213,6 +213,14 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 	cout << "This will result in:" << endl;
 	cout << "-range " << input.depth_units * P010LE_MAX << " m" << endl;
 	cout << "-precision " << input.depth_units*64.0f << " m (" << input.depth_units*64.0f*1000 << " mm)" << endl;
+
+	rs2::video_stream_profile depth_stream = profile.get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>();
+	rs2_intrinsics i = depth_stream.get_intrinsics();
+
+	cout << "The camera intrinsics:" << endl;
+	cout << "-ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
+	cout << "-distortion model " << i.model << " [" <<
+		i.coeffs[0] << "," << i.coeffs[2] << "," << i.coeffs[3] << "," << i.coeffs[4] << "]" << endl;
 }
 
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config)
