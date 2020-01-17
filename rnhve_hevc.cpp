@@ -18,6 +18,7 @@
 
 // Realsense API
 #include <librealsense2/rs.hpp>
+#include <librealsense2/rs_advanced_mode.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -214,6 +215,23 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 	cout << "-range " << input.depth_units * P010LE_MAX << " m" << endl;
 	cout << "-precision " << input.depth_units*64.0f << " m (" << input.depth_units*64.0f*1000 << " mm)" << endl;
 
+	try
+	{
+		 rs400::advanced_mode advanced = profile.get_device();
+		 pipe.stop(); //workaround the problem with setting advanced_mode on running stream
+		 STDepthTableControl depth_table = advanced.get_depth_table();
+		 depth_table.depthClampMax = P010LE_MAX;
+		 advanced.set_depth_table(depth_table);
+		 profile = pipe.start(cfg);
+	}
+	catch(const exception &)
+	{
+		cerr << "failed to set depth clamp max (rs400:advanced_mode)";
+		throw;
+	}
+
+	cout << "Clamping range at " << input.depth_units * P010LE_MAX << " m" << endl;
+
 	rs2::video_stream_profile depth_stream = profile.get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>();
 	rs2_intrinsics i = depth_stream.get_intrinsics();
 
@@ -236,7 +254,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 		cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128" << endl;
 		cerr << argv[0] << " 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000" << endl;
-		cerr << argv[0] << " 192.168.0.125 9766 depth 848 480 30 50 /dev/dri/renderD128 2000000" << endl;
+		cerr << argv[0] << " 127.0.0.1 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000" << endl;
 
 		return -1;
 	}

@@ -9,11 +9,13 @@ This includes streaming:
 
 See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer (color and infrared).
 
+See [realsense-depth-to-vaapi-hevc10](https://github.com/bmegli/realsense-depth-to-vaapi-hevc10/wiki/How-it-works) for depth encoding explanation.
+
 See [hardware-video-streaming](https://github.com/bmegli/hardware-video-streaming) for other related projects.
 
 The intent behind the program:
 - private experiments
-- minimize video latency
+- minimize video/depth latency
 - minimize CPU usage (hardware encoding, color conversions)
 
 ## Platforms 
@@ -101,7 +103,7 @@ Stream Realsense:
 #./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
 #./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128
 #./realsense-nhve-hevc 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
-#./realsense-nhve-hevc 192.168.0.125 9766 depth 848 480 30 50 /dev/dri/renderD128 2000000
+#./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000
 ```
 
 You may need to specify VAAPI device if you have more than one (e.g. NVIDIA GPU + Intel CPU).
