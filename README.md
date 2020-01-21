@@ -70,7 +70,7 @@ sudo apt-get install git
 git clone --recursive https://github.com/bmegli/realsense-network-hardware-video-encoder.git
 
 # finally build the program
-cd realsense-network-hardware-video-encoder.git
+cd realsense-network-hardware-video-encoder
 mkdir build
 cd build
 cmake ..
