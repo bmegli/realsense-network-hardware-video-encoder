@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	struct nhve *streamer;
 
 	struct input_args user_input = {0};
-	user_input.depth_units=0.0001f; //currently hardcoded
+	user_input.depth_units=0.0001f; //optionally override with user input
 
 	rs2::pipeline realsense;
 
@@ -245,7 +245,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 {
 	if(argc < 8)
 	{
-		cerr << "Usage: " << argv[0] << " <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate]" << endl;
+		cerr << "Usage: " << argv[0] << " <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]" << endl;
 		cerr << endl << "examples: " << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 color 640 360 30 5" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5" << endl;
@@ -255,6 +255,10 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 		cerr << argv[0] << " 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128" << endl;
 		cerr << argv[0] << " 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000" << endl;
 		cerr << argv[0] << " 127.0.0.1 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.0001" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.00005" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.000025" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.0000125" << endl;
 
 		return -1;
 	}
@@ -310,6 +314,9 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 	if(argc > 9)
 		hw_config->bit_rate = atoi(argv[9]);
+
+	if(argc > 10)
+		input->depth_units = strtof(argv[10], NULL);
 
 	return 0;
 }
