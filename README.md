@@ -1,22 +1,21 @@
 # Realsense Network Hardware Video Encoder
 
-Realsense hardware video encoding and streaming over custom [MLSP](https://github.com/bmegli/minimal-latency-streaming-protocol) protocol.
+Realsense hardware video/depth encoding and streaming over custom [MLSP](https://github.com/bmegli/minimal-latency-streaming-protocol) protocol.
 
 This includes streaming:
 - color (H.264, HEVC Main)
 - infrared (H.264, HEVC Main)
 - depth (HEVC Main10)
 
-See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer (color and infrared).
+See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer (color, infrared and depth).
 
 See [realsense-depth-to-vaapi-hevc10](https://github.com/bmegli/realsense-depth-to-vaapi-hevc10/wiki/How-it-works) for depth encoding explanation.
 
 See [hardware-video-streaming](https://github.com/bmegli/hardware-video-streaming) for other related projects.
 
-The intent behind the program:
-- private experiments
-- minimize video/depth latency
-- minimize CPU usage (hardware encoding, color conversions)
+See point cloud streaming video to understand this feature:
+
+[![Hardware Accelerated Point Cloud Streaming](http://img.youtube.com/vi/qnTxhfNW-_4/0.jpg)](http://www.youtube.com/watch?v=qnTxhfNW-_4)
 
 ## Platforms 
 
