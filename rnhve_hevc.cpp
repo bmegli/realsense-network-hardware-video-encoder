@@ -3,7 +3,8 @@
  *
  * Realsense hardware encoded UDP HEVC streaming
  * - color/infrared (Main)
- * - depth streaming (Main10)
+ * - depth (Main10)
+ * - depth with infrared (Main10)
  *
  * Copyright 2020 (C) Bartosz Meglicki <meglickib@gmail.com>
  *
@@ -22,11 +23,12 @@
 
 #include <fstream>
 #include <iostream>
+#include <cassert>
 using namespace std;
 
 int hint_user_on_failure(char *argv[]);
 
-enum StreamType {COLOR, INFRARED, DEPTH};
+enum StreamType {COLOR, INFRARED, DEPTH, DEPTH_WITH_INFRARED};
 
 //user supplied input
 struct input_args
@@ -41,6 +43,7 @@ struct input_args
 
 bool main_loop_color_infrared(const input_args& input, rs2::pipeline& realsense, nhve *streamer);
 bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *streamer);
+bool main_loop_depth_with_infrared(const input_args& input, rs2::pipeline& realsense, nhve *streamer);
 void init_realsense(rs2::pipeline& pipe, const input_args& input);
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config);
 
@@ -73,6 +76,8 @@ int main(int argc, char* argv[])
 		status = main_loop_color_infrared(user_input, realsense, streamer);
 	if(user_input.stream == DEPTH)
 		status = main_loop_depth(user_input, realsense, streamer);
+	if(user_input.stream == DEPTH_WITH_INFRARED)
+		status = main_loop_depth_with_infrared(user_input, realsense, streamer);
 
 	nhve_close(streamer);
 
@@ -178,13 +183,55 @@ bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *st
 	return f==frames;
 }
 
+//true on success, false on failure
+bool main_loop_depth_with_infrared(const input_args& input, rs2::pipeline& realsense, nhve *streamer)
+{
+	const int frames = input.seconds * input.framerate;
+	int f;
+	nhve_frame frame = {0};
+
+	for(f = 0; f < frames; ++f)
+	{
+		rs2::frameset frameset = realsense.wait_for_frames();
+		rs2::depth_frame depth = frameset.get_depth_frame();
+		rs2::video_frame video = frameset.get_infrared_frame(1);
+
+		const int w = depth.get_width();
+		const int h = depth.get_height();
+		const int stride=depth.get_stride_in_bytes();
+		const int ir_stride=video.get_stride_in_bytes();
+
+		assert(video.get_width() == ir_stride && 2*ir_stride == stride);
+
+		//supply realsense frame data as ffmpeg frame data
+		frame.linesize[0] = frame.linesize[1] =  stride; //the stride of Y and interleaved UV is equal
+		frame.data[0] = (uint8_t*) depth.get_data();
+		frame.data[1] = (uint8_t*) video.get_data();
+
+		frame.framenumber = f;
+
+		if(nhve_send_frame(streamer, &frame) != NHVE_OK)
+		{
+			cerr << "failed to send" << endl;
+			break;
+		}
+	}
+
+	//flush the streamer by sending NULL frame
+	nhve_send_frame(streamer, NULL);
+
+	//all the requested frames processed?
+	return f==frames;
+}
+
+
 void init_realsense(rs2::pipeline& pipe, const input_args& input)
 {
 	rs2::config cfg;
 
 	if(input.stream == COLOR)
 		cfg.enable_stream(RS2_STREAM_COLOR, input.width, input.height, RS2_FORMAT_YUYV, input.framerate);
-	else if(input.stream == INFRARED)
+	else if(input.stream == INFRARED || input.stream == DEPTH_WITH_INFRARED)
 	{// depth stream seems to be required for infrared to work
 		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
 		cfg.enable_stream(RS2_STREAM_INFRARED, 1, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
@@ -194,7 +241,7 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 
 	rs2::pipeline_profile profile = pipe.start(cfg);
 
-	if(input.stream != DEPTH)
+	if(input.stream != DEPTH && input.stream != DEPTH_WITH_INFRARED)
 		return;
 
 	rs2::depth_sensor depth_sensor = profile.get_device().first<rs2::depth_sensor>();
@@ -245,7 +292,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 {
 	if(argc < 8)
 	{
-		cerr << "Usage: " << argv[0] << " <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]" << endl;
+		cerr << "Usage: " << argv[0] << " <host> <port> <color/ir/depth/depth+ir> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]" << endl;
 		cerr << endl << "examples: " << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 color 640 360 30 5" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5" << endl;
@@ -253,12 +300,14 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 		cerr << argv[0] << " 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128" << endl;
+		cerr << argv[0] << " 127.0.0.1 9766 depth+ir 640 360 30 5 /dev/dri/renderD128" << endl;
 		cerr << argv[0] << " 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000" << endl;
 		cerr << argv[0] << " 127.0.0.1 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000" << endl;
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.0001" << endl;
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.00005" << endl;
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.000025" << endl;
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.0000125" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 depth+ir 848 480 30 500 /dev/dri/renderD128 2000000 0.0000125" << endl;
 
 		return -1;
 	}
@@ -269,7 +318,8 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	char c = argv[3][0]; //color, infrared, depth
 	if(c == 'c') input->stream = COLOR;
 	else if(c == 'i') input->stream = INFRARED;
-	else if(c == 'd') input->stream = DEPTH;
+	else if(c == 'd')
+		input->stream = (strlen(argv[3]) <= 5) ? DEPTH : DEPTH_WITH_INFRARED;
 	else
 	{
 		cerr << "unknown stream: " << argv[3];
@@ -291,13 +341,19 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//for explanation see:
 	//https://github.com/bmegli/realsense-depth-to-vaapi-hevc10/wiki/How-it-works
 
+	//for depth with infrared encoding we use 10 bit P010LE pixel format
+	//with depth encoded as above
+	//the infrared plane is encoded in chroma U/V plane
+	//for explanation see:
+	//TO DO
+
 	hw_config->profile = FF_PROFILE_HEVC_MAIN;
 
 	if(input->stream == COLOR)
 		hw_config->pixel_format = "yuyv422";
 	else if(input->stream == INFRARED)
 		hw_config->pixel_format = "nv12";
-	else //DEPTH
+	else //DEPTH, DEPTH_WITH_INFRARED
 	{
 		hw_config->pixel_format = "p010le";
 		hw_config->profile = FF_PROFILE_HEVC_MAIN_10;
@@ -327,5 +383,6 @@ int hint_user_on_failure(char *argv[])
 	cerr << argv[0] << " 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128" << endl;
 	cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128" << endl;
 	cerr << argv[0] << " 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128" << endl;
+	cerr << argv[0] << " 127.0.0.1 9766 depth+infrared 640 360 30 5 /dev/dri/renderD128" << endl;
 	return -1;
 }
