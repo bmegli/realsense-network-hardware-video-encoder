@@ -34,7 +34,11 @@ ATI/AMD may also work through VAAPI (libva-mesa-driver, not tested however).
 
 The dependency is through [HVE](https://github.com/bmegli/hardware-video-encoder) implementation (see [HVE issues](https://github.com/bmegli/hardware-video-encoder/issues/5)).
 
-Tested on LattePanda Alpha and i7-7820HK laptop.
+Depth encoding (HEVC Main10) requires at least Intel KabyLake.
+
+Textured depth encoding is implemented only for D435.
+
+Tested on LattePanda Alpha and i7-7820HK laptop with Realsense D435 camera.
 
 ## Dependencies
 
