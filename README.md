@@ -10,7 +10,7 @@ This includes streaming:
 
 See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer (color, infrared and depth).
 
-See [realsense-depth-to-vaapi-hevc10](https://github.com/bmegli/realsense-depth-to-vaapi-hevc10/wiki/How-it-works) for depth encoding explanation.
+See [how it works](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/How-it-works) on wiki to understand the code.
 
 See [hardware-video-streaming](https://github.com/bmegli/hardware-video-streaming) for other related projects.
 
