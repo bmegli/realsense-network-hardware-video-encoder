@@ -51,7 +51,6 @@ const uint16_t P010LE_MAX = 0xFFC0; //in binary 10 ones followed by 6 zeroes
 
 int main(int argc, char* argv[])
 {
-	//struct nhve_hw_config hw_config = {WIDTH, HEIGHT, FRAMERATE, DEVICE, ENCODER, PIXEL_FORMAT, PROFILE, BFRAMES, BITRATE};
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
 	struct nhve_hw_config hw_config = {0};
@@ -308,6 +307,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.000025" << endl;
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.0000125" << endl;
 		cerr << argv[0] << " 192.168.0.100 9768 depth+ir 848 480 30 500 /dev/dri/renderD128 2000000 0.0000125" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 depth+ir 848 480 30 500 /dev/dri/renderD128 8000000 0.00003125f" << endl;
 
 		return -1;
 	}
@@ -345,7 +345,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//with depth encoded as above
 	//the infrared plane is encoded in chroma U/V plane
 	//for explanation see:
-	//TO DO
+	//https://github.com/bmegli/hardware-video-streaming/issues/2
 
 	hw_config->profile = FF_PROFILE_HEVC_MAIN;
 

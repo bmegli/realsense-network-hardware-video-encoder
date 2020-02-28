@@ -6,6 +6,7 @@ This includes streaming:
 - color (H.264, HEVC Main)
 - infrared (H.264, HEVC Main)
 - depth (HEVC Main10)
+- textured depth (HEVC Main10)
 
 See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer (color, infrared and depth).
 
@@ -92,18 +93,22 @@ Stream H.264 Realsense color/infrared video over UDP.
 Stream Realsense:
 - color/infrared with HEVC Main
 - depth with HEVC Main10
+- textured depth with HEVC Main10
 
 ```bash
-# Usage: ./realsense-nhve-hevc <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]
+# Usage: ./realsense-nhve-hevc <host> <port> <color/ir/depth/depth+ir> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]
 ./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5
 #./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5
 #./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5
+#./realsense-nhve-hevc 127.0.0.1 9766 depth+ir 848 480 30 5
 #./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
 #./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
 #./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128
+#./realsense-nhve-hevc 127.0.0.1 9766 depth+ir 848 480 30 5 /dev/dri/renderD128
 #./realsense-nhve-hevc 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
 #./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000
 #./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 8000000 0.0001
+#./realsense-nhve-hevc 192.168.0.100 9768 depth+ir 848 480 30 50 /dev/dri/renderD128 8000000 0.0001
 ```
 
 You may need to specify VAAPI device if you have more than one (e.g. NVIDIA GPU + Intel CPU).
