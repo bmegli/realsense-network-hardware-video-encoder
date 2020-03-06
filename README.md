@@ -18,6 +18,11 @@ See point cloud streaming video to understand this feature:
 
 [![Hardware Accelerated Point Cloud Streaming](http://img.youtube.com/vi/qnTxhfNW-_4/0.jpg)](http://www.youtube.com/watch?v=qnTxhfNW-_4)
 
+See infrared textured point cloud streaming video to understand this feature:
+
+[![Hardware Accelerated Infrared Textured Point Cloud Streaming](http://img.youtube.com/vi/zVIuvWMz5mU/0.jpg)](https://www.youtube.com/watch?v=zVIuvWMz5mU)
+
+
 ## Platforms 
 
 Unix-like operating systems (e.g. Linux).
