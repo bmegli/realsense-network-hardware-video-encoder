@@ -157,6 +157,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//- Realsense IR sensor Y8 with VAAPI NV12 (luminance plane with dummy color plane)
 	//this way we always have optimal format at least on one side and hardware conversion on other
 	hw_config->pixel_format = input->stream_color ? "yuyv422" : "nv12";
+	hw_config->profile = FF_PROFILE_H264_HIGH;
 	hw_config->encoder = "h264_vaapi";
 	hw_config->width = input->width = atoi(argv[4]);
 	hw_config->height = input->height = atoi(argv[5]);
