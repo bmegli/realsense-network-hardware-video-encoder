@@ -29,21 +29,11 @@ Tested on Ubuntu 18.04.
 
 ## Hardware
 
-Tested on Intel Kaby Lake:
-- i7-7820HK laptop 
-- LattePanda Alpha
-- with Realsense D435
+Tested on Intel KabyLake with Realsense D435:
 
-### Video
-
-Intel VAAPI compatible hardware encoders (QuickSync Video).
-
-[Other technologies](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Hardware) may also work but were not tested.
-
-
-### Depth/textured depth
-
-Intel VAAPI HEVC Main10 compatible hardware encoders, at least Intel KabyLake.
+Requires: 
+- Intel VAAPI compatible hardware encoder (QuickSync Video)
+- for depth encoding at least Intel KabyLake
 
 [Other technologies](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Hardware) may also work but were not tested.
 
