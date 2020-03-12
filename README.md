@@ -23,9 +23,7 @@ See videos to understand point cloud streaming features:
 
 ## Platforms 
 
-Unix-like operating systems (e.g. Linux).
-
-The dependency is through [MLSP](https://github.com/bmegli/minimal-latency-streaming-protocol) socket use (easily portable).
+Unix-like operating systems (e.g. Linux), [more info](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Platforms).
 
 Tested on Ubuntu 18.04.
 
