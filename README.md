@@ -31,9 +31,7 @@ Tested on Ubuntu 18.04.
 
 Tested on Intel KabyLake with Realsense D435:
 
-Requires: 
-- Intel VAAPI compatible hardware encoder (QuickSync Video)
-- for depth encoding at least Intel KabyLake
+Requires Intel VAAPI compatible hardware encoder (QuickSync Video). For depth encoding at least KabyLake.
 
 [Other technologies](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Hardware) may also work but were not tested.
 
