@@ -29,17 +29,25 @@ Tested on Ubuntu 18.04.
 
 ## Hardware
 
-Intel VAAPI compatible hardware encoders ([Quick Sync Video](https://ark.intel.com/Search/FeatureFilter?productType=processors&QuickSyncVideo=true)).
+Tested on Intel Kaby Lake:
+- i7-7820HK laptop 
+- LattePanda Alpha
+- with Realsense D435
 
-ATI/AMD may also work through VAAPI (libva-mesa-driver, not tested however).
+### Video
 
-The dependency is through [HVE](https://github.com/bmegli/hardware-video-encoder) implementation (see [HVE issues](https://github.com/bmegli/hardware-video-encoder/issues/5)).
+Intel VAAPI compatible hardware encoders (QuickSync Video).
 
-Depth encoding (HEVC Main10) requires at least Intel KabyLake.
+[Other technologies](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Hardware) may also work but were not tested.
+
+
+### Depth/textured depth
+
+Intel VAAPI HEVC Main10 compatible hardware encoders, at least Intel KabyLake.
+
+[Other technologies](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Hardware) may also work but were not tested.
 
 Textured depth encoding is implemented only for D435.
-
-Tested on LattePanda Alpha and i7-7820HK laptop with Realsense D435 camera.
 
 ## Dependencies
 
