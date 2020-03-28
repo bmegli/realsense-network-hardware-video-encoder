@@ -51,6 +51,7 @@ const uint16_t P010LE_MAX = 0xFFC0; //in binary 10 ones followed by 6 zeroes
 
 int main(int argc, char* argv[])
 {
+	//nhve_hw_config {WIDTH, HEIGHT, FRAMERATE, DEVICE, ENCODER, PIXEL_FORMAT, PROFILE, BFRAMES, BITRATE, GOP_SIZE};
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
 	struct nhve_hw_config hw_config = {0};
@@ -370,6 +371,9 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 	if(argc > 9)
 		hw_config->bit_rate = atoi(argv[9]);
+
+	//optionally set gop_size (determines keyframes period)
+	//hw_config->gop_size = ...;
 
 	if(argc > 10)
 		input->depth_units = strtof(argv[10], NULL);

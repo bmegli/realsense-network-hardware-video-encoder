@@ -38,7 +38,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 int main(int argc, char* argv[])
 {
-	//struct nhve_hw_config hw_config = {WIDTH, HEIGHT, FRAMERATE, DEVICE, ENCODER, PIXEL_FORMAT, PROFILE, BFRAMES, BITRATE};
+	//nhve_hw_config {WIDTH, HEIGHT, FRAMERATE, DEVICE, ENCODER, PIXEL_FORMAT, PROFILE, BFRAMES, BITRATE, GOP_SIZE};
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
 	struct nhve_hw_config hw_config = {0};
@@ -168,6 +168,9 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 	if(argc > 9)
 		hw_config->bit_rate = atoi(argv[9]);
+
+	//optionally set gop_size (determines keyframes period)
+	//hw_config->gop_size = ...;
 
 	return 0;
 }
