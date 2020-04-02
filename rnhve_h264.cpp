@@ -38,7 +38,8 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 int main(int argc, char* argv[])
 {
-	//nhve_hw_config {WIDTH, HEIGHT, FRAMERATE, DEVICE, ENCODER, PIXEL_FORMAT, PROFILE, BFRAMES, BITRATE, QP, GOP_SIZE};
+	//nhve_hw_config {WIDTH, HEIGHT, FRAMERATE, DEVICE, ENCODER, PIXEL_FORMAT,
+	//		PROFILE, BFRAMES, BITRATE, QP, GOP_SIZE, COMPRESSION_LEVEL};
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
 	struct nhve_hw_config hw_config = {0};
@@ -174,6 +175,11 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 	//optionally set gop_size (determines keyframes period)
 	//hw_config->gop_size = ...;
+
+	//set highest quality and slowest encoding
+	//this adds around 3 ms and 10% GPU usage on my 2017 KabyLake
+	//with 848x480 HEVC Main10 encoding
+	hw_config->compression_level = 1;
 
 	return 0;
 }

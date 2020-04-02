@@ -378,6 +378,11 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//optionally set gop_size (determines keyframes period)
 	//hw_config->gop_size = ...;
 
+	//set highest quality and slowest encoding
+	//this adds around 3 ms and 10% GPU usage on my 2017 KabyLake
+	//with 848x480 HEVC Main10 encoding
+	hw_config->compression_level = 1;
+
 	if(argc > 10)
 		input->depth_units = strtof(argv[10], NULL);
 
