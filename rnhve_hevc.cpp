@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 
 	init_realsense(realsense, user_input);
 
-	if( (streamer = nhve_init(&net_config, &hw_config)) == NULL )
+	if( (streamer = nhve_init(&net_config, &hw_config, 1)) == NULL )
 		return hint_user_on_failure(argv);
 
 	bool status = false;
@@ -116,9 +116,7 @@ bool main_loop_color_infrared(const input_args& input, rs2::pipeline& realsense,
 		frame.linesize[1] = (input.stream == COLOR) ? 0 : frame.linesize[0];
 		frame.data[1] = color_data; //dummy color plane for infrared
 
-		frame.framenumber = f;
-
-		if(nhve_send_frame(streamer, &frame) != NHVE_OK)
+		if(nhve_send(streamer, f, &frame) != NHVE_OK)
 		{
 			cerr << "failed to send" << endl;
 			break;
@@ -126,7 +124,7 @@ bool main_loop_color_infrared(const input_args& input, rs2::pipeline& realsense,
 	}
 
 	//flush the streamer by sending NULL frame
-	nhve_send_frame(streamer, NULL);
+	nhve_send(streamer, f, NULL);
 
 	delete [] color_data;
 
@@ -165,9 +163,7 @@ bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *st
 		frame.data[0] = (uint8_t*) depth.get_data();
 		frame.data[1] = (uint8_t*) color_data;
 
-		frame.framenumber = f;
-
-		if(nhve_send_frame(streamer, &frame) != NHVE_OK)
+		if(nhve_send(streamer, f, &frame) != NHVE_OK)
 		{
 			cerr << "failed to send" << endl;
 			break;
@@ -175,7 +171,7 @@ bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *st
 	}
 
 	//flush the streamer by sending NULL frame
-	nhve_send_frame(streamer, NULL);
+	nhve_send(streamer, f, NULL);
 
 	delete [] color_data;
 
@@ -208,9 +204,7 @@ bool main_loop_depth_with_infrared(const input_args& input, rs2::pipeline& reals
 		frame.data[0] = (uint8_t*) depth.get_data();
 		frame.data[1] = (uint8_t*) video.get_data();
 
-		frame.framenumber = f;
-
-		if(nhve_send_frame(streamer, &frame) != NHVE_OK)
+		if(nhve_send(streamer, f, &frame) != NHVE_OK)
 		{
 			cerr << "failed to send" << endl;
 			break;
@@ -218,7 +212,7 @@ bool main_loop_depth_with_infrared(const input_args& input, rs2::pipeline& reals
 	}
 
 	//flush the streamer by sending NULL frame
-	nhve_send_frame(streamer, NULL);
+	nhve_send(streamer, f, NULL);
 
 	//all the requested frames processed?
 	return f==frames;
