@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 
 	init_realsense(realsense, user_input);
 
-	if( (streamer = nhve_init(&net_config, &hw_config)) == NULL )
+	if( (streamer = nhve_init(&net_config, &hw_config, 1)) == NULL )
 		return hint_user_on_failure(argv);
 
 	bool status=main_loop(user_input, realsense, streamer);
@@ -96,9 +96,7 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 		frame.linesize[1] = input.stream_color ? 0 : frame.linesize[0];
 		frame.data[1] = color_data; //dummy color plane for infrared
 
-		frame.framenumber = f;
-
-		if(nhve_send_frame(streamer, &frame) != NHVE_OK)
+		if(nhve_send(streamer, f, &frame) != NHVE_OK)
 		{
 			cerr << "failed to send" << endl;
 			break;
@@ -106,7 +104,7 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	}
 
 	//flush the streamer by sending NULL frame
-	nhve_send_frame(streamer, NULL);
+	nhve_send(streamer, f, NULL);
 
 	delete [] color_data;
 

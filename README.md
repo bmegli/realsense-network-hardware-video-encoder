@@ -6,7 +6,7 @@ This includes streaming:
 - color (H.264, HEVC Main)
 - infrared (H.264, HEVC Main)
 - depth (HEVC Main10)
-- textured depth (HEVC Main10)
+- textured depth (HEVC Main10 + HEVC Main)
 
 See [unity-network-hardware-video-decoder](https://github.com/bmegli/unity-network-hardware-video-decoder) as example network decoder & renderer (color, infrared and depth).
 
@@ -94,7 +94,7 @@ Stream H.264 Realsense color/infrared video over UDP.
 Stream Realsense:
 - color/infrared with HEVC Main
 - depth with HEVC Main10
-- textured depth with HEVC Main10
+
 
 ```bash
 # Usage: ./realsense-nhve-hevc <host> <port> <color/ir/depth/depth+ir> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]
@@ -112,9 +112,28 @@ Stream Realsense:
 #./realsense-nhve-hevc 192.168.0.100 9768 depth+ir 848 480 30 50 /dev/dri/renderD128 8000000 0.0001
 ```
 
-You may need to specify VAAPI device if you have more than one (e.g. NVIDIA GPU + Intel CPU).
+Stream Realsense D435:
+- depth with HEVC Main10, infrared with HEVC
+
+```bash
+./realsense-nhve-depth-ir <host> <port> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_ir] [depth units]
+
+examples: 
+./realsense-nhve-depth-ir 127.0.0.1 9766 640 360 30 5
+./realsense-nhve-depth-ir 127.0.0.1 9766 640 360 30 5 /dev/dri/renderD128
+./realsense-nhve-depth-ir 192.168.0.125 9766 640 360 30 50 /dev/dri/renderD128 4000000 1000000
+./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0001
+./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00005
+./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025
+./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
+./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
+```
 
 If you don't have receiving end you will just see if hardware encoding worked/didn't work.
+
+You may need to specify VAAPI device if you have more than one (e.g. NVIDIA GPU + Intel CPU).
+
+If you get errors see also HVE [troubleshooting](https://github.com/bmegli/hardware-video-encoder/wiki/Troubleshooting).
 
 ## License
 
