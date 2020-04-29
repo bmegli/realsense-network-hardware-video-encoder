@@ -255,7 +255,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//this adds around 3 ms and 10% GPU usage on my 2017 KabyLake
 	//with 848x480 HEVC Main10 encoding
 	hw_config[DEPTH].compression_level = 1;
-	hw_config[IR].compression_level = 1;
+	hw_config[IR].compression_level = 0;
 
 	//optionally set qp instead of bit_rate for CQP mode
 	//hw_config[].qp = ...
