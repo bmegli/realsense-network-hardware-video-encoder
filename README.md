@@ -1,4 +1,4 @@
-# Realsense Network Hardware Video Encoder
+# RNHVE Realsense Network Hardware Video Encoder
 
 Realsense hardware video/depth encoding and streaming over custom [MLSP](https://github.com/bmegli/minimal-latency-streaming-protocol) protocol.
 
