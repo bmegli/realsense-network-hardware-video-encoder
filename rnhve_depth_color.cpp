@@ -21,7 +21,8 @@
 
 #include <fstream>
 #include <iostream>
-#include <cassert>
+#include <math.h>
+
 using namespace std;
 
 int hint_user_on_failure(char *argv[]);
@@ -185,11 +186,15 @@ void print_intrinsics(const rs2::pipeline_profile& profile, rs2_stream stream)
 	rs2::video_stream_profile stream_profile = profile.get_stream(stream).as<rs2::video_stream_profile>();
 	rs2_intrinsics i = stream_profile.get_intrinsics();
 
+	const float rad2deg = 180.0f / M_PI;
+	float hfov = 2 * atan(i.width / (2*i.fx)) * rad2deg;
+	float vfov = 2 * atan(i.height / (2*i.fy)) * rad2deg;
+
 	cout << "The camera intrinsics (" << stream << "):" << endl;
-	cout << "-width=" << i.width << " height=" << i.height << " ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
+	cout << "-width=" << i.width << " height=" << i.height << " hfov=" << hfov << " vfov=" << vfov << endl <<
+           "-ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
 	cout << "-distortion model " << i.model << " [" <<
 		i.coeffs[0] << "," << i.coeffs[2] << "," << i.coeffs[3] << "," << i.coeffs[4] << "]" << endl;
-
 }
 
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config)
