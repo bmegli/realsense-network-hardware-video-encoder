@@ -30,8 +30,10 @@ int hint_user_on_failure(char *argv[]);
 //user supplied input
 struct input_args
 {
-	int width;
-	int height;
+	int depth_width;
+	int depth_height;
+	int color_width;
+	int color_height;
 	int framerate;
 	int seconds;
 	float depth_units;
@@ -137,8 +139,8 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 {
 	rs2::config cfg;
 
-	cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
-	cfg.enable_stream(RS2_STREAM_COLOR, input.width, input.height, RS2_FORMAT_YUYV, input.framerate);
+	cfg.enable_stream(RS2_STREAM_DEPTH, input.depth_width, input.depth_height, RS2_FORMAT_Z16, input.framerate);
+	cfg.enable_stream(RS2_STREAM_COLOR, input.color_width, input.color_height, RS2_FORMAT_YUYV, input.framerate);
 
 	rs2::pipeline_profile profile = pipe.start(cfg);
 
@@ -199,19 +201,21 @@ void print_intrinsics(const rs2::pipeline_profile& profile, rs2_stream stream)
 
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config)
 {
-	if(argc < 7)
+	if(argc < 9)
 	{
-		cerr << "Usage: " << argv[0] << " <host> <port> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_color] [depth units]" << endl;
+		cerr << "Usage: " << argv[0] << " <host> <port> <width_depth> <height_depth> <width_color> <height_color>" << endl
+			  << "   <framerate> <seconds> [device] [bitrate_depth] [bitrate_color] [depth units]" << endl;
 		cerr << endl << "examples: " << endl;
-		cerr << argv[0] << " 127.0.0.1 9766 640 360 30 5" << endl;
-		cerr << argv[0] << " 127.0.0.1 9766 640 360 30 5 /dev/dri/renderD128" << endl;
-		cerr << argv[0] << " 192.168.0.125 9766 640 360 30 50 /dev/dri/renderD128 4000000 1000000" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0001" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00005" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125f" << endl;
+		cerr << argv[0] << " 127.0.0.1 9766 640 360 640 360 30 5" << endl;
+		cerr << argv[0] << " 127.0.0.1 9766 640 360 640 360 30 5 /dev/dri/renderD128" << endl;
+		cerr << argv[0] << " 192.168.0.125 9766 640 360 640 360 30 50 /dev/dri/renderD128 4000000 1000000" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0001" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00005" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125f" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 848 480 1280 720 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125f" << endl;
 
 		return -1;
 	}
@@ -233,33 +237,42 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//for both cases (depth and color) we use native hardware formats
 	//and there is no need for data processing on the host CPU
 
+	input->depth_width = atoi(argv[3]);
+	input->depth_height = atoi(argv[4]);
+	input->color_width = atoi(argv[5]);
+	input->color_height = atoi(argv[6]);
+
 	//DEPTH hardware encoding configuration
 	hw_config[DEPTH].profile = FF_PROFILE_HEVC_MAIN_10;
 	hw_config[DEPTH].pixel_format = "p010le";
 	hw_config[DEPTH].encoder = "hevc_vaapi";
-	hw_config[DEPTH].width = input->width = atoi(argv[3]);
-	hw_config[DEPTH].height = input->height = atoi(argv[4]);
-	hw_config[DEPTH].framerate = input->framerate = atoi(argv[5]);
 
-	input->seconds = atoi(argv[6]);
+	//dimmesions of depth match color after alignmnet
+	hw_config[DEPTH].width = input->color_width;
+	hw_config[DEPTH].height = input->color_height;
 
-	hw_config[DEPTH].device = argv[7]; //NULL as last argv argument, or device path
+	hw_config[DEPTH].framerate = input->framerate = atoi(argv[7]);
 
-	if(argc > 8)
-		hw_config[DEPTH].bit_rate = atoi(argv[8]);
+	input->seconds = atoi(argv[8]);
+
+	hw_config[DEPTH].device = argv[9]; //NULL as last argv argument, or device path
+
+	if(argc > 10)
+		hw_config[DEPTH].bit_rate = atoi(argv[10]);
 
 	//COLOR hardware encoding configuration
 	hw_config[COLOR].profile = FF_PROFILE_HEVC_MAIN;
 	hw_config[COLOR].pixel_format = "yuyv422";
 	hw_config[COLOR].encoder = "hevc_vaapi";
-	hw_config[COLOR].width = input->width = atoi(argv[3]);
-	hw_config[COLOR].height = input->height = atoi(argv[4]);
-	hw_config[COLOR].framerate = input->framerate = atoi(argv[5]);
 
-	hw_config[COLOR].device = argv[7]; //NULL as last argv argument, or device path
+	hw_config[COLOR].width = input->color_width;
+	hw_config[COLOR].height = input->color_height;
+	hw_config[COLOR].framerate = input->framerate = atoi(argv[7]);
 
-	if(argc > 9)
-		hw_config[COLOR].bit_rate = atoi(argv[9]);
+	hw_config[COLOR].device = argv[9]; //NULL as last argv argument, or device path
+
+	if(argc > 11)
+		hw_config[COLOR].bit_rate = atoi(argv[11]);
 
 	//set highest quality and slowest encoding
 	//this adds around 3 ms and 10% GPU usage on my 2017 KabyLake
@@ -273,8 +286,8 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//optionally set gop_size (determines keyframes period)
 	//hw_config[].gop_size = ...;
 
-	if(argc > 10)
-		input->depth_units = strtof(argv[10], NULL);
+	if(argc > 12)
+		input->depth_units = strtof(argv[12], NULL);
 
 	return 0;
 }
@@ -282,7 +295,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 int hint_user_on_failure(char *argv[])
 {
 	cerr << "unable to initalize, try to specify device e.g:" << endl << endl;
-	cerr << argv[0] << " 127.0.0.1 9766 640 360 30 5 /dev/dri/renderD128" << endl;
-	cerr << argv[0] << " 127.0.0.1 9766 640 360 30 5 /dev/dri/renderD129" << endl;
+	cerr << argv[0] << " 127.0.0.1 9766 640 360 640 360 30 5 /dev/dri/renderD128" << endl;
+	cerr << argv[0] << " 127.0.0.1 9766 640 360 640 360 30 5 /dev/dri/renderD129" << endl;
 	return -1;
 }
