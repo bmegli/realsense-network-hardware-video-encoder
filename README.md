@@ -101,15 +101,12 @@ Stream Realsense:
 ./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5
 #./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5
 #./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5
-#./realsense-nhve-hevc 127.0.0.1 9766 depth+ir 848 480 30 5
 #./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
 #./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
 #./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128
-#./realsense-nhve-hevc 127.0.0.1 9766 depth+ir 848 480 30 5 /dev/dri/renderD128
 #./realsense-nhve-hevc 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
 #./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000
 #./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 8000000 0.0001
-#./realsense-nhve-hevc 192.168.0.100 9768 depth+ir 848 480 30 50 /dev/dri/renderD128 8000000 0.0001
 ```
 
 Stream Realsense D435:
@@ -127,6 +124,30 @@ examples:
 ./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025
 ./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
 ./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
+```
+
+Stream Realsense D415/D435:
+- depth with HEVC Main10, color with HEVC (aligned)
+
+```bash
+Usage: ./realsense-nhve-depth-color
+       <host> <port>
+       <color/depth> # alignment direction
+       <width_depth> <height_depth> <width_color> <height_color>
+       <framerate> <seconds>
+       [device] [bitrate_depth] [bitrate_color] [depth units]
+
+examples:
+./realsense-nhve-depth-color 127.0.0.1 9766 color 640 360 640 360 30 5
+./realsense-nhve-depth-color 127.0.0.1 9766 color 640 360 640 360 30 5 /dev/dri/renderD128
+./realsense-nhve-depth-color 192.168.0.125 9766 color 640 360 640 360 30 50 /dev/dri/renderD128 4000000 1000000
+./realsense-nhve-depth-color 192.168.0.100 9768 color 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0001
+./realsense-nhve-depth-color 192.168.0.100 9768 color 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00005
+./realsense-nhve-depth-color 192.168.0.100 9768 color 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025
+./realsense-nhve-depth-color 192.168.0.100 9768 color 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
+./realsense-nhve-depth-color 192.168.0.100 9768 depth 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
+./realsense-nhve-depth-color 192.168.0.100 9768 color 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125f
+./realsense-nhve-depth-color 192.168.0.100 9768 depth 848 480 1280 720 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125f
 ```
 
 If you don't have receiving end you will just see if hardware encoding worked/didn't work.
