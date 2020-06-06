@@ -100,7 +100,7 @@ Stream Realsense:
 
 ```bash
 Usage:
-./realsense-nhve-hevc <host> <port> <color/ir/depth/depth+ir> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]
+./realsense-nhve-hevc <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]
 
 ./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5
 ./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5
