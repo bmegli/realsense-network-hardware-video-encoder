@@ -21,3 +21,7 @@ add_executable(realsense-nhve-depth-ir rnhve_depth_ir.cpp)
 target_include_directories(realsense-nhve-depth-ir PRIVATE network-hardware-video-encoder)
 target_link_libraries(realsense-nhve-depth-ir nhve realsense2)
 
+add_executable(realsense-nhve-depth-color rnhve_depth_color.cpp)
+target_include_directories(realsense-nhve-depth-color PRIVATE network-hardware-video-encoder)
+target_link_libraries(realsense-nhve-depth-color nhve realsense2)
+
