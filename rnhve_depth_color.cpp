@@ -23,6 +23,9 @@
 #include <iostream>
 #include <math.h>
 
+//benchmark related
+#include <time.h> //clock_gettime
+
 using namespace std;
 
 int hint_user_on_failure(char *argv[]);
@@ -91,10 +94,15 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 
 	rs2::align aligner( (input.align_to == Color) ? RS2_STREAM_COLOR : RS2_STREAM_DEPTH);
 
+	struct timespec start, end, end_all;
+
 	for(f = 0; f < frames; ++f)
 	{
 		rs2::frameset frameset = realsense.wait_for_frames();
+		clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 		frameset = aligner.process(frameset);
+		clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+
 
 		rs2::depth_frame depth = frameset.get_depth_frame();
 		rs2::video_frame color = frameset.get_color_frame();
@@ -125,6 +133,12 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 			cerr << "failed to send" << endl;
 			break;
 		}
+		
+		clock_gettime(CLOCK_MONOTONIC_RAW, &end_all);
+		double align_ms = (end.tv_nsec - start.tv_nsec) / 1000000.0;
+		double all_ms = (end_all.tv_nsec - start.tv_nsec) / 1000000.0;
+
+		cout << "aligned in " << align_ms << " ms"  << " align + encode + send in " << all_ms << endl;
 	}
 
 	//flush the streamer by sending NULL frame
