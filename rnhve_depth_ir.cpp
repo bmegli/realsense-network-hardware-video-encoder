@@ -110,24 +110,32 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 			memset(ir_uv, 128, ir_stride * h /2);
 		}
 
-		//supply realsense frame data as ffmpeg frame data
+		//supply realsense depth frame data as ffmpeg frame data
 		frame[0].linesize[0] = frame[0].linesize[1] =  depth_stride; //the strides of Y and UV are equal
 		frame[0].data[0] = (uint8_t*) depth.get_data();
 		frame[0].data[1] = (uint8_t*) depth_uv;
 
+		if(nhve_send(streamer, &frame[0], 0) != NHVE_OK)
+		{
+			cerr << "failed to send" << endl;
+			break;
+		}
+
+		//supply realsense infrared frame data as ffmpeg frame data
 		frame[1].linesize[0] = frame[1].linesize[1] =  ir_stride; //the strides of Y and UV are equal
 		frame[1].data[0] = (uint8_t*) ir.get_data();
 		frame[1].data[1] = ir_uv;
 
-		if(nhve_send(streamer, f, frame) != NHVE_OK)
+		if(nhve_send(streamer, &frame[1], 1) != NHVE_OK)
 		{
 			cerr << "failed to send" << endl;
 			break;
 		}
 	}
 
-	//flush the streamer by sending NULL frame
-	nhve_send(streamer, f, NULL);
+	//flush the hardware by sending NULL frames
+	nhve_send(streamer, NULL, 0);
+	nhve_send(streamer, NULL, 1);
 
 	delete [] depth_uv;
 	delete [] ir_uv;
