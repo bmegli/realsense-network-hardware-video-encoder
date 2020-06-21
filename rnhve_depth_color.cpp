@@ -120,7 +120,13 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 		frame[1].linesize[0] = color.get_stride_in_bytes();
 		frame[1].data[0] = (uint8_t*) color.get_data();
 
-		if(nhve_send(streamer, f, frame) != NHVE_OK)
+		if(nhve_send(streamer, &frame[0], 0) != NHVE_OK)
+		{
+			cerr << "failed to send" << endl;
+			break;
+		}
+
+		if(nhve_send(streamer, &frame[1], 1) != NHVE_OK)
 		{
 			cerr << "failed to send" << endl;
 			break;
@@ -128,7 +134,8 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	}
 
 	//flush the streamer by sending NULL frame
-	nhve_send(streamer, f, NULL);
+	nhve_send(streamer, NULL, 0);
+	nhve_send(streamer, NULL, 1);
 
 	delete [] depth_uv;
 
