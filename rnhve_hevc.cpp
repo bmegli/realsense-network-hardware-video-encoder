@@ -128,6 +128,23 @@ bool main_loop_color_infrared(const input_args& input, rs2::pipeline& realsense,
 	return f==frames;
 }
 
+void process_depth_data(const input_args &input, rs2::depth_frame &depth)
+{
+	const int half_stride = depth.get_stride_in_bytes()/2;
+	const int height = depth.get_height();
+	
+	const float depth_units_set = 0.00025;
+	const float multiplier = depth_units_set / input.depth_units;
+
+	uint16_t* data = (uint16_t*)depth.get_data();
+	
+	for(int i = 0;i < half_stride * height; ++i)
+	{
+		uint32_t val = data[i] * multiplier;
+		data[i] = val <= P010LE_MAX ? val : 0;
+	}
+}
+
 //true on success, false on failure
 bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *streamer)
 {
@@ -144,6 +161,8 @@ bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *st
 		const int w = depth.get_width();
 		const int h = depth.get_height();
 		const int stride=depth.get_stride_in_bytes();
+
+		process_depth_data(input, depth);
 
 		if(!color_data)
 		{  //prepare dummy color plane for P010LE format, half the size of Y
@@ -175,26 +194,13 @@ bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *st
 	return f==frames;
 }
 
-void init_realsense(rs2::pipeline& pipe, const input_args& input)
+void init_realsense_depth(rs2::pipeline& pipe, const rs2::config &cfg, const input_args& input)
 {
-	rs2::config cfg;
-
-	if(input.stream == COLOR)
-		cfg.enable_stream(RS2_STREAM_COLOR, input.width, input.height, RS2_FORMAT_YUYV, input.framerate);
-	else if(input.stream == INFRARED)
-	{// depth stream seems to be required for infrared to work
-		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
-		cfg.enable_stream(RS2_STREAM_INFRARED, 1, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
-	}
-	else if(input.stream == DEPTH)
-		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
-
-	rs2::pipeline_profile profile = pipe.start(cfg);
-
-	if(input.stream != DEPTH)
-		return;
-
+	rs2::pipeline_profile profile = pipe.get_active_profile();
+	
 	rs2::depth_sensor depth_sensor = profile.get_device().first<rs2::depth_sensor>();
+
+	/*
 
 	try
 	{
@@ -229,13 +235,37 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 
 	cout << "Clamping range at " << input.depth_units * P010LE_MAX << " m" << endl;
 
+	*/
+  
 	rs2::video_stream_profile depth_stream = profile.get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>();
 	rs2_intrinsics i = depth_stream.get_intrinsics();
 
 	cout << "The camera intrinsics:" << endl;
 	cout << "-width=" << i.width << " height=" << i.height << " ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
 	cout << "-distortion model " << i.model << " [" <<
-		i.coeffs[0] << "," << i.coeffs[2] << "," << i.coeffs[3] << "," << i.coeffs[4] << "]" << endl;
+		i.coeffs[0] << "," << i.coeffs[2] << "," << i.coeffs[3] << "," << i.coeffs[4] << "]" << endl;	
+}
+
+void init_realsense(rs2::pipeline& pipe, const input_args& input)
+{
+	rs2::config cfg;
+
+	if(input.stream == COLOR)
+		cfg.enable_stream(RS2_STREAM_COLOR, input.width, input.height, RS2_FORMAT_YUYV, input.framerate);
+	else if(input.stream == INFRARED)
+	{// depth stream seems to be required for infrared to work
+		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
+		cfg.enable_stream(RS2_STREAM_INFRARED, 1, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
+	}
+	else if(input.stream == DEPTH)
+		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
+
+	rs2::pipeline_profile profile = pipe.start(cfg);
+
+	if(input.stream != DEPTH)
+		return;
+
+	init_realsense_depth(pipe, cfg, input);
 }
 
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config)

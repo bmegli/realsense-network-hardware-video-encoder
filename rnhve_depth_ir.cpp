@@ -75,6 +75,23 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+void process_depth_data(const input_args &input, rs2::depth_frame &depth)
+{
+	const int half_stride = depth.get_stride_in_bytes()/2;
+	const int height = depth.get_height();
+	
+	const float depth_units_set = 0.00025;
+	const float multiplier = depth_units_set / input.depth_units;
+
+	uint16_t* data = (uint16_t*)depth.get_data();
+	
+	for(int i = 0;i < half_stride * height; ++i)
+	{
+		uint32_t val = data[i] * multiplier;
+		data[i] = val <= P010LE_MAX ? val : 0;
+	}
+}
+
 //true on success, false on failure
 bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer)
 {
@@ -89,12 +106,14 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	{
 		rs2::frameset frameset = realsense.wait_for_frames();
 		rs2::depth_frame depth = frameset.get_depth_frame();
-		rs2::video_frame ir = frameset.get_infrared_frame(1);
-
+		rs2::video_frame ir = frameset.get_infrared_frame();
+	
 		const int w = depth.get_width();
 		const int h = depth.get_height();
 		const int depth_stride=depth.get_stride_in_bytes();
 		const int ir_stride=ir.get_stride_in_bytes();
+
+		process_depth_data(input, depth);
 
 		if(!depth_uv || !ir_uv)
 		{  //prepare dummy color plane for P010LE format, half the size of Y
@@ -144,16 +163,48 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	return f==frames;
 }
 
-void init_realsense(rs2::pipeline& pipe, const input_args& input)
+std::string json = "{ \
+    \"Ambient Light\": 2, \
+    \"Apd Temperature\": -9999, \
+    \"Avalanche Photo Diode\": 18, \
+    \"Confidence Threshold\": 1, \
+    \"Depth Offset\": 4.5, \
+    \"Depth Units\": 0.000250000011874363, \
+    \"Error Polling Enabled\": 1, \
+    \"Frames Queue Size\": 16, \
+    \"Freefall Detection Enabled\": 1, \
+    \"Global Time Enabled\": 0.0, \
+    \"Inter Cam Sync Mode\": 0.0, \
+    \"Invalidation Bypass\": 0.0, \
+    \"Laser Power\": 87, \
+    \"Lld Temperature\": 45.3513870239258, \
+    \"Ma Temperature\": 43.7060546875, \
+    \"Mc Temperature\": 43.8653526306152, \
+    \"Min Distance\": 190, \
+    \"Noise Filtering\": 3, \
+    \"Post Processing Sharpening\": 1, \
+    \"Pre Processing Sharpening\": 0.0, \
+    \"Sensor Mode\": 0.0, \
+    \"Visual Preset\": 5, \
+    \"Zero Order Enabled\": 0.0, \
+    \"stream-depth-format\": \"Z16\", \
+    \"stream-fps\": \"30\", \
+    \"stream-height\": \"480\", \
+    \"stream-ir-format\": \"Y8\", \
+    \"stream-width\": \"640\" \
+}";
+
+void init_realsense_depth(rs2::pipeline& pipe, const rs2::config &cfg, const input_args& input)
 {
-	rs2::config cfg;
-
-	cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
-	cfg.enable_stream(RS2_STREAM_INFRARED, 1, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
-
-	rs2::pipeline_profile profile = pipe.start(cfg);
-
+	rs2::pipeline_profile profile = pipe.get_active_profile();
+	
 	rs2::depth_sensor depth_sensor = profile.get_device().first<rs2::depth_sensor>();
+
+	auto serializable  = profile.get_device().as<rs2::serializable_device>();
+	
+	serializable.load_json(json);
+
+	/*
 
 	try
 	{
@@ -188,13 +239,29 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 
 	cout << "Clamping range at " << input.depth_units * P010LE_MAX << " m" << endl;
 
+	*/
+  
 	rs2::video_stream_profile depth_stream = profile.get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>();
 	rs2_intrinsics i = depth_stream.get_intrinsics();
 
 	cout << "The camera intrinsics:" << endl;
 	cout << "-width=" << i.width << " height=" << i.height << " ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
 	cout << "-distortion model " << i.model << " [" <<
-		i.coeffs[0] << "," << i.coeffs[2] << "," << i.coeffs[3] << "," << i.coeffs[4] << "]" << endl;
+		i.coeffs[0] << "," << i.coeffs[2] << "," << i.coeffs[3] << "," << i.coeffs[4] << "]" << endl;	
+}
+
+void init_realsense(rs2::pipeline& pipe, const input_args& input)
+{
+	rs2::config cfg;
+
+	cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
+	cfg.enable_stream(RS2_STREAM_INFRARED, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
+
+	//cfg.enable_stream(RS2_STREAM_INFRARED, 1, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
+
+	rs2::pipeline_profile profile = pipe.start(cfg);
+
+	init_realsense_depth(pipe, cfg, input);
 }
 
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config)
