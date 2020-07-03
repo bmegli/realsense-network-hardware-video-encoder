@@ -121,7 +121,7 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 	else
 	{// depth stream seems to be required for infrared to work
 		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
-		cfg.enable_stream(RS2_STREAM_INFRARED, 1, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
+		cfg.enable_stream(RS2_STREAM_INFRARED, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
 	}
 
 	rs2::pipeline_profile profile = pipe.start(cfg);

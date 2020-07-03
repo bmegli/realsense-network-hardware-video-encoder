@@ -21,6 +21,7 @@
 #include <librealsense2/rs_advanced_mode.hpp>
 
 #include <fstream>
+#include <streambuf> //loading json config
 #include <iostream>
 #include <cassert>
 using namespace std;
@@ -38,11 +39,18 @@ struct input_args
 	int seconds;
 	float depth_units;
 	StreamType stream;
+	std::string json;
+	bool needs_postprocessing;
 };
 
 bool main_loop_color_infrared(const input_args& input, rs2::pipeline& realsense, nhve *streamer);
 bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *streamer);
-void init_realsense(rs2::pipeline& pipe, const input_args& input);
+void process_depth_data(const input_args &input, rs2::depth_frame &depth);
+
+void init_realsense(rs2::pipeline& pipe, input_args& input);
+void init_realsense_depth(rs2::pipeline& pipe, const rs2::config &cfg, input_args& input);
+void print_intrinsics(const rs2::pipeline_profile& profile, rs2_stream stream);
+
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config);
 
 const uint16_t P010LE_MAX = 0xFFC0; //in binary 10 ones followed by 6 zeroes
@@ -145,6 +153,10 @@ bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *st
 		const int h = depth.get_height();
 		const int stride=depth.get_stride_in_bytes();
 
+		//L515 doesn't support setting depth units and clamping
+		if(input.needs_postprocessing)
+			process_depth_data(input, depth);
+
 		if(!color_data)
 		{  //prepare dummy color plane for P010LE format, half the size of Y
 			//we can't alloc it in advance, this is the first time we know realsense stride
@@ -175,7 +187,25 @@ bool main_loop_depth(const input_args& input, rs2::pipeline& realsense, nhve *st
 	return f==frames;
 }
 
-void init_realsense(rs2::pipeline& pipe, const input_args& input)
+void process_depth_data(const input_args &input, rs2::depth_frame &depth)
+{
+	const int half_stride = depth.get_stride_in_bytes()/2;
+	const int height = depth.get_height();
+
+	const float depth_units_set = depth.get_units();
+	const float multiplier = depth_units_set / input.depth_units;
+
+	//note - we process data in place rather than making a copy
+	uint16_t* data = (uint16_t*)depth.get_data();
+
+	for(int i = 0;i < half_stride * height; ++i)
+	{
+		uint32_t val = data[i] * multiplier;
+		data[i] = val <= P010LE_MAX ? val : 0;
+	}
+}
+
+void init_realsense(rs2::pipeline& pipe, input_args& input)
 {
 	rs2::config cfg;
 
@@ -184,7 +214,7 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 	else if(input.stream == INFRARED)
 	{// depth stream seems to be required for infrared to work
 		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
-		cfg.enable_stream(RS2_STREAM_INFRARED, 1, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
+		cfg.enable_stream(RS2_STREAM_INFRARED, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
 	}
 	else if(input.stream == DEPTH)
 		cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
@@ -194,25 +224,60 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 	if(input.stream != DEPTH)
 		return;
 
+	init_realsense_depth(pipe, cfg, input);
+	
+	print_intrinsics(profile, RS2_STREAM_DEPTH);
+}
+
+void init_realsense_depth(rs2::pipeline& pipe, const rs2::config &cfg, input_args& input)
+{
+	rs2::pipeline_profile profile = pipe.get_active_profile();
+
 	rs2::depth_sensor depth_sensor = profile.get_device().first<rs2::depth_sensor>();
 
-	try
+	if(!input.json.empty())
 	{
-		depth_sensor.set_option(RS2_OPTION_DEPTH_UNITS, input.depth_units);
-	}
-	catch(const exception &)
-	{
-		rs2::option_range range = depth_sensor.get_option_range(RS2_OPTION_DEPTH_UNITS);
-		cerr << "failed to set depth units to " << input.depth_units << " (range is " << range.min << "-" << range.max << ")" << endl;
-		throw;
+		cout << "loading settings from json:" << endl << input.json  << endl;
+		auto serializable  = profile.get_device().as<rs2::serializable_device>();
+		serializable.load_json(input.json);
 	}
 
-	cout << "Setting realsense depth units to " << input.depth_units << endl;
+	bool supports_depth_units = depth_sensor.supports(RS2_OPTION_DEPTH_UNITS) &&
+										!depth_sensor.is_option_read_only(RS2_OPTION_DEPTH_UNITS);
+
+	float depth_unit_set = input.depth_units;
+
+	if(supports_depth_units)
+	{
+		try
+		{
+			depth_sensor.set_option(RS2_OPTION_DEPTH_UNITS, input.depth_units);
+			depth_unit_set = depth_sensor.get_option(RS2_OPTION_DEPTH_UNITS);
+			if(depth_unit_set != input.depth_units)
+				cerr << "WARNING - device corrected depth units to value: " << depth_unit_set << endl;
+		}
+		catch(const exception &)
+		{
+			rs2::option_range range = depth_sensor.get_option_range(RS2_OPTION_DEPTH_UNITS);
+			cerr << "failed to set depth units to " << input.depth_units << " (range is " << range.min << "-" << range.max << ")" << endl;
+			throw;
+		}
+	}
+	else
+	{
+		cerr << "WARNING - device doesn't support setting depth units!" << endl;
+		input.needs_postprocessing = true;
+	}
+
+	cout << (supports_depth_units ? "Setting" : "Simulating") <<
+		" realsense depth units: " << depth_unit_set << endl;
 	cout << "This will result in:" << endl;
 	cout << "-range " << input.depth_units * P010LE_MAX << " m" << endl;
 	cout << "-precision " << input.depth_units*64.0f << " m (" << input.depth_units*64.0f*1000 << " mm)" << endl;
 
-	try
+	bool supports_advanced_mode = depth_sensor.supports(RS2_CAMERA_INFO_ADVANCED_MODE);
+
+	if(supports_advanced_mode)
 	{
 		 rs400::advanced_mode advanced = profile.get_device();
 		 pipe.stop(); //workaround the problem with setting advanced_mode on running stream
@@ -221,19 +286,27 @@ void init_realsense(rs2::pipeline& pipe, const input_args& input)
 		 advanced.set_depth_table(depth_table);
 		 profile = pipe.start(cfg);
 	}
-	catch(const exception &)
+	else
 	{
-		cerr << "failed to set depth clamp max (rs400:advanced_mode)";
-		throw;
+		cerr << "WARNING - device doesn't support advanced mode depth clamping!" << endl;
+		input.needs_postprocessing = true;
 	}
+	cout << (supports_advanced_mode ?  "Clamping" : "Simulating clamping") <<
+	" range at " << input.depth_units * P010LE_MAX << " m" << endl;
+}
 
-	cout << "Clamping range at " << input.depth_units * P010LE_MAX << " m" << endl;
+void print_intrinsics(const rs2::pipeline_profile& profile, rs2_stream stream)
+{
+	rs2::video_stream_profile stream_profile = profile.get_stream(stream).as<rs2::video_stream_profile>();
+	rs2_intrinsics i = stream_profile.get_intrinsics();
 
-	rs2::video_stream_profile depth_stream = profile.get_stream(RS2_STREAM_DEPTH).as<rs2::video_stream_profile>();
-	rs2_intrinsics i = depth_stream.get_intrinsics();
+	const float rad2deg = 180.0f / M_PI;
+	float hfov = 2 * atan(i.width / (2*i.fx)) * rad2deg;
+	float vfov = 2 * atan(i.height / (2*i.fy)) * rad2deg;
 
-	cout << "The camera intrinsics:" << endl;
-	cout << "-width=" << i.width << " height=" << i.height << " ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
+	cout << "The camera intrinsics (" << stream << "):" << endl;
+	cout << "-width=" << i.width << " height=" << i.height << " hfov=" << hfov << " vfov=" << vfov << endl <<
+           "-ppx=" << i.ppx << " ppy=" << i.ppy << " fx=" << i.fx << " fy=" << i.fy << endl;
 	cout << "-distortion model " << i.model << " [" <<
 		i.coeffs[0] << "," << i.coeffs[2] << "," << i.coeffs[3] << "," << i.coeffs[4] << "]" << endl;
 }
@@ -242,7 +315,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 {
 	if(argc < 8)
 	{
-		cerr << "Usage: " << argv[0] << " <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]" << endl;
+		cerr << "Usage: " << argv[0] << " <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units] [json]" << endl;
 		cerr << endl << "examples: " << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 color 640 360 30 5" << endl;
 		cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5" << endl;
@@ -256,6 +329,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.00005" << endl;
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.000025" << endl;
 		cerr << argv[0] << " 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.0000125" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 depth 640 480 30 500 /dev/dri/renderD128 8000000 0.0000390625 my_config.json" << endl;
 
 		return -1;
 	}
@@ -325,6 +399,20 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 
 	if(argc > 10)
 		input->depth_units = strtof(argv[10], NULL);
+
+	if(argc > 11)
+	{
+		ifstream file(argv[11]);
+		if(!file)
+		{
+			cerr << "unable to open file " << argv[11] << endl;
+			return -1;
+		}
+
+		input->json = string((istreambuf_iterator<char>(file)), istreambuf_iterator<char>());
+	}
+
+	input->needs_postprocessing = false;
 
 	return 0;
 }

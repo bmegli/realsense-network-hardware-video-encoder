@@ -35,7 +35,8 @@ Requires Intel VAAPI compatible hardware encoder (QuickSync Video). For depth en
 
 [Other technologies](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Hardware) may also work but were not tested.
 
-Textured depth encoding is implemented only for D435.
+Infrared textured depth encoding is implemented only for D435 and L515.
+Color textured depth encoding is implemented for D415, D435, L515.
 
 ## Dependencies
 
@@ -100,7 +101,7 @@ Stream Realsense:
 
 ```bash
 Usage:
-./realsense-nhve-hevc <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units]
+./realsense-nhve-hevc <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units] [json]
 
 ./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5
 ./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5
@@ -111,14 +112,15 @@ Usage:
 ./realsense-nhve-hevc 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
 ./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000
 ./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 8000000 0.0001
+./realsense-nhve-hevc 192.168.0.100 9768 depth 640 480 30 500 /dev/dri/renderD128 8000000 0.0000390625 my_config.json
 ```
 
-Stream Realsense D435:
+Stream Realsense D435/L515:
 - depth with HEVC Main10, infrared with HEVC
 
 ```bash
 Usage:
-./realsense-nhve-depth-ir <host> <port> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_ir] [depth units]
+./realsense-nhve-depth-ir <host> <port> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_ir] [depth units] [json]
 
 examples: 
 ./realsense-nhve-depth-ir 127.0.0.1 9766 640 360 30 5
@@ -129,9 +131,10 @@ examples:
 ./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025
 ./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
 ./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
+./realsense-nhve-depth-ir 192.168.0.100 9768 640 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json
 ```
 
-Stream Realsense D415/D435:
+Stream Realsense D415/D435/L515:
 - depth with HEVC Main10, color with HEVC (aligned)
 
 ```bash
@@ -140,7 +143,7 @@ Usage: ./realsense-nhve-depth-color
        <color/depth> # alignment direction
        <width_depth> <height_depth> <width_color> <height_color>
        <framerate> <seconds>
-       [device] [bitrate_depth] [bitrate_color] [depth units]
+       [device] [bitrate_depth] [bitrate_color] [depth units] [json]
 
 examples:
 ./realsense-nhve-depth-color 127.0.0.1 9766 color 640 360 640 360 30 5
@@ -153,6 +156,8 @@ examples:
 ./realsense-nhve-depth-color 192.168.0.100 9768 depth 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
 ./realsense-nhve-depth-color 192.168.0.100 9768 color 848 480 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125f
 ./realsense-nhve-depth-color 192.168.0.100 9768 depth 848 480 1280 720 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125f
+./realsense-nhve-depth-color 192.168.0.100 9768 depth 640 480 1280 720 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json
+./realsense-nhve-depth-color 192.168.0.100 9768 color 640 480 1280 720 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json
 ```
 
 If you don't have receiving end you will just see if hardware encoding worked/didn't work.
