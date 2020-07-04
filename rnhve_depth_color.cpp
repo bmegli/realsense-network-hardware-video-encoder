@@ -24,6 +24,8 @@
 #include <iostream>
 #include <math.h>
 
+#include <chrono> //benchmark related
+
 using namespace std;
 
 int hint_user_on_failure(char *argv[]);
@@ -101,6 +103,9 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	for(f = 0; f < frames; ++f)
 	{
 		rs2::frameset frameset = realsense.wait_for_frames();
+		
+		auto start = chrono::high_resolution_clock::now();
+		
 		frameset = aligner.process(frameset);
 
 		rs2::depth_frame depth = frameset.get_depth_frame();
@@ -109,9 +114,11 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 		const int h = depth.get_height();
 		const int depth_stride=depth.get_stride_in_bytes();
 
+		auto pproc_start = chrono::high_resolution_clock::now();
 		//L515 doesn't support setting depth units and clamping
 		if(input.needs_postprocessing)
 			process_depth_data(input, depth);
+		auto pproc_stop = chrono::high_resolution_clock::now();
 
 		if(!depth_uv)
 		{  //prepare dummy color plane for P010LE format, half the size of Y
@@ -142,6 +149,11 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 			cerr << "failed to send" << endl;
 			break;
 		}
+		
+		auto stop = chrono::high_resolution_clock::now();
+		
+		cout << "duration:" << chrono::duration_cast<chrono::milliseconds>(stop - start).count() << " ms pproc "
+		     << chrono::duration_cast<chrono::milliseconds>(pproc_stop - pproc_start).count() << " ms" << endl;
 	}
 
 	//flush the streamer by sending NULL frame
