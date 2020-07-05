@@ -18,6 +18,7 @@
 // Realsense API
 #include <librealsense2/rs.hpp>
 #include <librealsense2/rs_advanced_mode.hpp>
+#include <librealsense2-gl/rs_processing_gl.hpp>
 
 #include <fstream>
 #include <streambuf> //loading json config
@@ -63,11 +64,13 @@ int main(int argc, char* argv[])
 	struct nhve_net_config net_config = {0};
 	struct nhve_hw_config hw_configs[2] = { {0}, {0} };
 	struct nhve *streamer;
+	bool use_gpu_processing = true;
 
 	struct input_args user_input = {0};
 	user_input.depth_units=0.0001f; //optionally override with user input
 
 	rs2::pipeline realsense;
+
 
 	if(process_user_input(argc, argv, &user_input, &net_config, hw_configs) < 0)
 		return 1;
@@ -77,7 +80,11 @@ int main(int argc, char* argv[])
 	if( (streamer = nhve_init(&net_config, hw_configs, 2)) == NULL )
 		return hint_user_on_failure(argv);
 
+	rs2::gl::init_processing(use_gpu_processing);
+
 	bool status = main_loop(user_input, realsense, streamer);
+
+	rs2::gl::shutdown_processing();
 
 	nhve_close(streamer);
 
@@ -96,7 +103,7 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 
 	uint16_t *depth_uv = NULL; //data of dummy color plane for P010LE
 
-	rs2::align aligner( (input.align_to == Color) ? RS2_STREAM_COLOR : RS2_STREAM_DEPTH);
+	rs2::gl::align aligner( (input.align_to == Color) ? RS2_STREAM_COLOR : RS2_STREAM_DEPTH );
 
 	for(f = 0; f < frames; ++f)
 	{

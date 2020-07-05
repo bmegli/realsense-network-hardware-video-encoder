@@ -41,7 +41,7 @@ Color textured depth encoding is implemented for D415, D435, L515.
 ## Dependencies
 
 This program depends on:
-- [librealsense2](https://github.com/IntelRealSense/librealsense) 
+- [librealsense2](https://github.com/IntelRealSense/librealsense)
 - [NHVE Network Hardware Video Encoder](https://github.com/bmegli/network-hardware-video-encoder)
 	- [HVE Hardware Video Encoder](https://github.com/bmegli/hardware-video-encoder)
 		- FFmpeg `avcodec` and `avutil` (at least 3.4 version)
@@ -60,6 +60,8 @@ Tested on Ubuntu 18.04.
 ``` bash
 # update package repositories
 sudo apt-get update 
+# get librealsense2-gl for GPU processing acceleration
+sudo apt-get install librealsense2-gl-dev
 # get avcodec and avutil
 sudo apt-get install ffmpeg libavcodec-dev libavutil-dev
 # get compilers and make 
