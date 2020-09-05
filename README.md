@@ -29,14 +29,14 @@ Tested on Ubuntu 18.04.
 
 ## Hardware
 
-Tested on Intel KabyLake with Realsense D435:
+Tested on Intel KabyLake with Realsense D435, D455, L515.
 
 Requires Intel VAAPI compatible hardware encoder (QuickSync Video). For depth encoding at least KabyLake.
 
 [Other technologies](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Hardware) may also work but were not tested.
 
-Infrared textured depth encoding is implemented only for D435 and L515.
-Color textured depth encoding is implemented for D415, D435, L515.
+Infrared textured depth encoding is implemented for D435, D455 and L515.
+Color textured depth encoding is implemented for D415, D435, D455, L515.
 
 ## Dependencies
 
@@ -115,7 +115,7 @@ Usage:
 ./realsense-nhve-hevc 192.168.0.100 9768 depth 640 480 30 500 /dev/dri/renderD128 8000000 0.0000390625 my_config.json
 ```
 
-Stream Realsense D435/L515:
+Stream Realsense D435/D455/L515:
 - depth with HEVC Main10, infrared with HEVC
 
 ```bash
@@ -134,7 +134,7 @@ examples:
 ./realsense-nhve-depth-ir 192.168.0.100 9768 640 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json
 ```
 
-Stream Realsense D415/D435/L515:
+Stream Realsense D415/D435/D455/L515:
 - depth with HEVC Main10, color with HEVC (aligned)
 
 ```bash
