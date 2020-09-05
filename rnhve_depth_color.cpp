@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
 
 	init_realsense(realsense, user_input);
 
-	if( (streamer = nhve_init(&net_config, hw_configs, 2)) == NULL )
+	if( (streamer = nhve_init(&net_config, hw_configs, 2, 0)) == NULL )
 		return hint_user_on_failure(argv);
 
 	bool status = main_loop(user_input, realsense, streamer);
