@@ -3,6 +3,7 @@
  *
  * Realsense hardware encoded UDP HEVC multi-streaming
  * - depth (Main10) + infrared (Main)
+ * - depth (Main10) + infrared rgb (Main)
  *
  * Copyright 2020 (C) Bartosz Meglicki <meglickib@gmail.com>
  *
@@ -28,6 +29,8 @@ using namespace std;
 
 int hint_user_on_failure(char *argv[]);
 
+enum StreamType {INFRARED, INFRARED_RGB};
+
 //user supplied input
 struct input_args
 {
@@ -36,6 +39,7 @@ struct input_args
 	int framerate;
 	int seconds;
 	float depth_units;
+	StreamType stream;
 	std::string json;
 	bool needs_postprocessing;
 };
@@ -92,7 +96,7 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	nhve_frame frame[2] = { {0}, {0} };
 
 	uint16_t *depth_uv = NULL; //data of dummy color plane for P010LE
-	uint8_t *ir_uv = NULL; //data of dummy color plane for NV12
+	uint8_t *ir_uv = NULL; //data of dummy color plane for NV12 for Realsense infrared
 
 	for(f = 0; f < frames; ++f)
 	{
@@ -109,7 +113,7 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 		if(input.needs_postprocessing)
 			process_depth_data(input, depth);
 
-		if(!depth_uv || !ir_uv)
+		if(!depth_uv)
 		{  //prepare dummy color plane for P010LE format, half the size of Y
 			//we can't alloc it in advance, this is the first time we know realsense stride
 			//the stride will be at least width * 2 (Realsense Z16, VAAPI P010LE)
@@ -119,8 +123,11 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 				depth_uv[i] = UINT16_MAX / 2; //dummy middle value for U/V, equals 128 << 8, equals 32768
 
 			//prepare dummy color plane for NV12 format, half the size of Y
-			ir_uv = new uint8_t[ir_stride * h /2];
-			memset(ir_uv, 128, ir_stride * h /2);
+			if(input.stream == INFRARED)
+			{
+				ir_uv = new uint8_t[ir_stride * h /2];
+				memset(ir_uv, 128, ir_stride * h /2);
+			}
 		}
 
 		//supply realsense depth frame data as ffmpeg frame data
@@ -135,9 +142,11 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 		}
 
 		//supply realsense infrared frame data as ffmpeg frame data
-		frame[1].linesize[0] = frame[1].linesize[1] =  ir_stride; //the strides of Y and UV are equal
+		frame[1].linesize[0] = ir_stride;
 		frame[1].data[0] = (uint8_t*) ir.get_data();
-		frame[1].data[1] = ir_uv;
+
+		frame[1].linesize[1] = (input.stream == INFRARED) ? ir_stride : 0; //NV12 strides of Y and UV are equal, UYVY is single plane
+		frame[1].data[1] = ir_uv; //data for NV12 or NULL for single plane UYVY
 
 		if(nhve_send(streamer, &frame[1], 1) != NHVE_OK)
 		{
@@ -180,7 +189,10 @@ void init_realsense(rs2::pipeline& pipe, input_args& input)
 	rs2::config cfg;
 
 	cfg.enable_stream(RS2_STREAM_DEPTH, input.width, input.height, RS2_FORMAT_Z16, input.framerate);
-	cfg.enable_stream(RS2_STREAM_INFRARED, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
+	if(input.stream == INFRARED)
+		cfg.enable_stream(RS2_STREAM_INFRARED, input.width, input.height, RS2_FORMAT_Y8, input.framerate);
+	else //INFRARED_RGB
+		cfg.enable_stream(RS2_STREAM_INFRARED, input.width, input.height, RS2_FORMAT_UYVY, input.framerate);
 
 	rs2::pipeline_profile profile = pipe.start(cfg);
 
@@ -274,26 +286,31 @@ void print_intrinsics(const rs2::pipeline_profile& profile, rs2_stream stream)
 
 int process_user_input(int argc, char* argv[], input_args* input, nhve_net_config *net_config, nhve_hw_config *hw_config)
 {
-	if(argc < 7)
+	if(argc < 8)
 	{
-		cerr << "Usage: " << argv[0] << " <host> <port> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_ir] [depth units] [json]" << endl;
+		cerr << "Usage: " << argv[0] << " <host> <port> <ir/ir-rgb> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_ir] [depth units] [json]" << endl;
 		cerr << endl << "examples: " << endl;
-		cerr << argv[0] << " 127.0.0.1 9766 640 360 30 5" << endl;
-		cerr << argv[0] << " 127.0.0.1 9766 640 360 30 5 /dev/dri/renderD128" << endl;
-		cerr << argv[0] << " 192.168.0.125 9766 640 360 30 50 /dev/dri/renderD128 4000000 1000000" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0001" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00005" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125" << endl;
-		cerr << argv[0] << " 192.168.0.100 9768 640 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json" << endl;
+		cerr << argv[0] << " 127.0.0.1 9766 ir 640 360 30 5" << endl;
+		cerr << argv[0] << " 127.0.0.1 9766 ir-rgb 640 360 30 5" << endl;
+		cerr << argv[0] << " 127.0.0.1 9766 ir 640 360 30 5 /dev/dri/renderD128" << endl;
+		cerr << argv[0] << " 192.168.0.125 9766 ir-rgb 640 360 30 50 /dev/dri/renderD128 4000000 1000000" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 ir 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0001" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 ir-rgb 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00005" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 ir 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 ir-rgb 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 ir 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 ir-rgb 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125" << endl;
+		cerr << argv[0] << " 192.168.0.100 9768 ir 640 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json" << endl;
 
 		return -1;
 	}
 
 	net_config->ip = argv[1];
 	net_config->port = atoi(argv[2]);
+
+	input->stream = INFRARED;
+	if(strlen(argv[3]) > 3 && argv[3][2] == '-')
+		input->stream = INFRARED_RGB;
 
 	//for depth encoding we use 10 bit P010LE pixel format
 	//that can be directly matched with Realsense output as P016LE Y plane
@@ -307,33 +324,36 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//for both cases (depth and infrared) we use native hardware formats
 	//and there is no need for data processing on the host CPU
 
+	//for infrared rgb encoding we use uyvy_422 VAAPI format
+	//matched with Realsense UYVY infrared rgb data
+
 	//DEPTH hardware encoding configuration
 	hw_config[DEPTH].profile = FF_PROFILE_HEVC_MAIN_10;
 	hw_config[DEPTH].pixel_format = "p010le";
 	hw_config[DEPTH].encoder = "hevc_vaapi";
-	hw_config[DEPTH].width = input->width = atoi(argv[3]);
-	hw_config[DEPTH].height = input->height = atoi(argv[4]);
-	hw_config[DEPTH].framerate = input->framerate = atoi(argv[5]);
+	hw_config[DEPTH].width = input->width = atoi(argv[4]);
+	hw_config[DEPTH].height = input->height = atoi(argv[5]);
+	hw_config[DEPTH].framerate = input->framerate = atoi(argv[6]);
 
-	input->seconds = atoi(argv[6]);
+	input->seconds = atoi(argv[7]);
 
-	hw_config[DEPTH].device = argv[7]; //NULL as last argv argument, or device path
+	hw_config[DEPTH].device = argv[8]; //NULL as last argv argument, or device path
 
-	if(argc > 8)
-		hw_config[DEPTH].bit_rate = atoi(argv[8]);
+	if(argc > 9)
+		hw_config[DEPTH].bit_rate = atoi(argv[9]);
 
 	//INFRARED hardware encoding configuration
 	hw_config[IR].profile = FF_PROFILE_HEVC_MAIN;
-	hw_config[IR].pixel_format = "nv12";
+	hw_config[IR].pixel_format = (input->stream == INFRARED) ? "nv12" : "uyvy422";
 	hw_config[IR].encoder = "hevc_vaapi";
-	hw_config[IR].width = input->width = atoi(argv[3]);
-	hw_config[IR].height = input->height = atoi(argv[4]);
-	hw_config[IR].framerate = input->framerate = atoi(argv[5]);
+	hw_config[IR].width = input->width = atoi(argv[4]);
+	hw_config[IR].height = input->height = atoi(argv[5]);
+	hw_config[IR].framerate = input->framerate = atoi(argv[6]);
 
-	hw_config[IR].device = argv[7]; //NULL as last argv argument, or device path
+	hw_config[IR].device = argv[8]; //NULL as last argv argument, or device path
 
-	if(argc > 9)
-		hw_config[IR].bit_rate = atoi(argv[9]);
+	if(argc > 10)
+		hw_config[IR].bit_rate = atoi(argv[10]);
 
 	//set highest quality and slowest encoding
 	//this adds around 3 ms and 10% GPU usage on my 2017 KabyLake
@@ -347,15 +367,15 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 	//optionally set gop_size (determines keyframes period)
 	//hw_config[].gop_size = ...;
 
-	if(argc > 10)
-		input->depth_units = strtof(argv[10], NULL);
-
 	if(argc > 11)
+		input->depth_units = strtof(argv[11], NULL);
+
+	if(argc > 12)
 	{
-		ifstream file(argv[11]);
+		ifstream file(argv[12]);
 		if(!file)
 		{
-			cerr << "unable to open file " << argv[11] << endl;
+			cerr << "unable to open file " << argv[12] << endl;
 			return -1;
 		}
 
@@ -370,7 +390,7 @@ int process_user_input(int argc, char* argv[], input_args* input, nhve_net_confi
 int hint_user_on_failure(char *argv[])
 {
 	cerr << "unable to initalize, try to specify device e.g:" << endl << endl;
-	cerr << argv[0] << " 127.0.0.1 9766 640 360 30 5 /dev/dri/renderD128" << endl;
-	cerr << argv[0] << " 127.0.0.1 9766 640 360 30 5 /dev/dri/renderD129" << endl;
+	cerr << argv[0] << " 127.0.0.1 9766 ir 640 360 30 5 /dev/dri/renderD128" << endl;
+	cerr << argv[0] << " 127.0.0.1 9766 ir 640 360 30 5 /dev/dri/renderD129" << endl;
 	return -1;
 }
