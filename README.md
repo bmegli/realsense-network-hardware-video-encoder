@@ -121,24 +121,24 @@ examples:
 ./realsense-nhve-hevc 192.168.0.100 9768 depth 640 480 30 500 /dev/dri/renderD128 8000000 0.0000390625 my_config.json
 ```
 
-Stream Realsense D435/D455/L515:
-- depth with HEVC Main10, infrared with HEVC
+Stream Realsense D415/D435/D455/L515:
+- depth with HEVC Main10, infrared or infrared rgb with HEVC
 
 ```bash
-Usage:
-./realsense-nhve-depth-ir <host> <port> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_ir] [depth units] [json]
+Usage: ./realsense-nhve-depth-ir <host> <port> <ir/ir-rgb> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_ir] [depth units] [json]
 
 examples: 
-./realsense-nhve-depth-ir 127.0.0.1 9766 640 360 30 5
-./realsense-nhve-depth-ir 127.0.0.1 9766 640 360 30 5 /dev/dri/renderD128
-./realsense-nhve-depth-ir 192.168.0.125 9766 640 360 30 50 /dev/dri/renderD128 4000000 1000000
-./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0001
-./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00005
-./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025
-./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
-./realsense-nhve-depth-ir 192.168.0.100 9768 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
-./realsense-nhve-depth-ir 192.168.0.100 9768 640 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json
-```
+./realsense-nhve-depth-ir 127.0.0.1 9766 ir 640 360 30 5
+./realsense-nhve-depth-ir 127.0.0.1 9766 ir-rgb 640 360 30 5
+./realsense-nhve-depth-ir 127.0.0.1 9766 ir 640 360 30 5 /dev/dri/renderD128
+./realsense-nhve-depth-ir 192.168.0.125 9766 ir-rgb 640 360 30 50 /dev/dri/renderD128 4000000 1000000
+./realsense-nhve-depth-ir 192.168.0.100 9768 ir 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0001
+./realsense-nhve-depth-ir 192.168.0.100 9768 ir-rgb 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00005
+./realsense-nhve-depth-ir 192.168.0.100 9768 ir 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.000025
+./realsense-nhve-depth-ir 192.168.0.100 9768 ir-rgb 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
+./realsense-nhve-depth-ir 192.168.0.100 9768 ir 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
+./realsense-nhve-depth-ir 192.168.0.100 9768 ir-rgb 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125
+./realsense-nhve-depth-ir 192.168.0.100 9768 ir 640 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json```
 
 Stream Realsense D415/D435/D455/L515:
 - depth with HEVC Main10, color with HEVC (aligned)
