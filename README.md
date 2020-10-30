@@ -81,18 +81,19 @@ make
 
 ## Running
 
-Stream H.264 Realsense color/infrared video over UDP.
+Stream H.264 Realsense color/infrared/infrared-rgb video over UDP.
 
 ```bash
-Usage:
-./realsense-nhve-h264 <host> <port> <color/ir> <width> <height> <framerate> <seconds> [device] [bitrate]
+Usage: ./realsense-nhve-h264 <host> <port> <color/ir/ir-rgb> <width> <height> <framerate> <seconds> [device] [bitrate]
 
+examples:
 ./realsense-nhve-h264 127.0.0.1 9766 color 640 360 30 5
-./realsense-nhve-h264 127.0.0.1 9766 infrared 640 360 30 5
+./realsense-nhve-h264 127.0.0.1 9766 ir 640 360 30 5
+./realsense-nhve-h264 127.0.0.1 9766 ir-rgb 640 360 30 5
 ./realsense-nhve-h264 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
-./realsense-nhve-h264 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
-./realsense-nhve-h264 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
-```
+./realsense-nhve-h264 127.0.0.1 9766 ir 640 360 30 5 /dev/dri/renderD128
+./realsense-nhve-h264 127.0.0.1 9766 ir-rgb 640 360 30 5 /dev/dri/renderD128
+./realsense-nhve-h264 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000```
 
 Stream Realsense:
 - color/infrared with HEVC Main
