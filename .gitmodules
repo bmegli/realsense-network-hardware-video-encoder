@@ -1,3 +1,9 @@
 [submodule "network-hardware-video-encoder"]
 	path = network-hardware-video-encoder
 	url = https://github.com/bmegli/network-hardware-video-encoder.git
+[submodule "roboclaw"]
+	path = roboclaw
+	url = https://github.com/bmegli/roboclaw.git
+[submodule "vmu931"]
+	path = vmu931
+	url = https://github.com/bmegli/vmu931.git
