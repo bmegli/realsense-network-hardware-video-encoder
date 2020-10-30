@@ -4,7 +4,7 @@ Realsense hardware video/depth encoding and streaming over custom [MLSP](https:/
 
 This includes streaming:
 - color (H.264, HEVC Main)
-- infrared (H.264, HEVC Main)
+- infrared/infrared-rgb (H.264, HEVC Main)
 - depth (HEVC Main10)
 - textured depth (HEVC Main10 + HEVC Main)
 
@@ -35,7 +35,7 @@ Requires Intel VAAPI compatible hardware encoder (QuickSync Video). For depth en
 
 [Other technologies](https://github.com/bmegli/realsense-network-hardware-video-encoder/wiki/Hardware) may also work but were not tested.
 
-Infrared textured depth encoding is implemented for D435, D455 and L515.
+Infrared textured depth encoding is implemented for D415, D435, D455 and L515.
 Color textured depth encoding is implemented for D415, D435, D455, L515.
 
 ## Dependencies
@@ -96,23 +96,28 @@ examples:
 ./realsense-nhve-h264 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000```
 
 Stream Realsense:
-- color/infrared with HEVC Main
+- color/infrared/infrared-rgb with HEVC Main
 - depth with HEVC Main10
 
 
 ```bash
-Usage:
-./realsense-nhve-hevc <host> <port> <color/ir/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units] [json]
+Usage: ./realsense-nhve-hevc <host> <port> <color/ir/ir-rgb/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units] [json]
 
+examples:
 ./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5
-./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5
+./realsense-nhve-hevc 127.0.0.1 9766 ir 640 360 30 5
+./realsense-nhve-hevc 127.0.0.1 9766 ir-rgb 640 360 30 5
 ./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5
 ./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128
-./realsense-nhve-hevc 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128
+./realsense-nhve-hevc 127.0.0.1 9766 ir 640 360 30 5 /dev/dri/renderD128
+./realsense-nhve-hevc 127.0.0.1 9766 ir-rgb 640 360 30 5 /dev/dri/renderD128
 ./realsense-nhve-hevc 127.0.0.1 9766 depth 640 360 30 5 /dev/dri/renderD128
 ./realsense-nhve-hevc 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000
-./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000
-./realsense-nhve-hevc 192.168.0.125 9768 depth 848 480 30 50 /dev/dri/renderD128 8000000 0.0001
+./realsense-nhve-hevc 127.0.0.1 9768 depth 848 480 30 50 /dev/dri/renderD128 2000000
+./realsense-nhve-hevc 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.0001
+./realsense-nhve-hevc 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.00005
+./realsense-nhve-hevc 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.000025
+./realsense-nhve-hevc 192.168.0.100 9768 depth 848 480 30 500 /dev/dri/renderD128 2000000 0.0000125
 ./realsense-nhve-hevc 192.168.0.100 9768 depth 640 480 30 500 /dev/dri/renderD128 8000000 0.0000390625 my_config.json
 ```
 

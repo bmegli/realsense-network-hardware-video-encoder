@@ -75,7 +75,7 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	const int frames = input.seconds * input.framerate;
 	int f;
 	nhve_frame frame = {0};
-	uint8_t *color_data = NULL; //data of dummy color plane for NV12 with Realsense Infrared
+	uint8_t *color_data = NULL; //data of dummy color plane for NV12 with Realsense infrared
 
 	for(f = 0; f < frames; ++f)
 	{
@@ -202,6 +202,7 @@ int hint_user_on_failure(char *argv[])
 {
 	cerr << "unable to initalize, try to specify device e.g:" << endl << endl;
 	cerr << argv[0] << " 127.0.0.1 9766 color 640 360 30 5 /dev/dri/renderD128" << endl;
-	cerr << argv[0] << " 127.0.0.1 9766 infrared 640 360 30 5 /dev/dri/renderD128" << endl;
+	cerr << argv[0] << " 127.0.0.1 9766 ir 640 360 30 5 /dev/dri/renderD128" << endl;
+	cerr << argv[0] << " 127.0.0.1 9766 ir-rgb 640 360 30 5 /dev/dri/renderD128" << endl;
 	return -1;
 }
