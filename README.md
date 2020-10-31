@@ -84,7 +84,11 @@ make
 Stream H.264 Realsense color/infrared/infrared-rgb video over UDP.
 
 ```bash
-Usage: ./realsense-nhve-h264 <host> <port> <color/ir/ir-rgb> <width> <height> <framerate> <seconds> [device] [bitrate]
+Usage: ./realsense-nhve-h264
+       <host> <port>
+       <color/ir/ir-rgb>
+       <width> <height> <framerate> <seconds>
+       [device] [bitrate]
 
 examples:
 ./realsense-nhve-h264 127.0.0.1 9766 color 640 360 30 5
@@ -94,14 +98,18 @@ examples:
 ./realsense-nhve-h264 127.0.0.1 9766 ir 640 360 30 5 /dev/dri/renderD128
 ./realsense-nhve-h264 127.0.0.1 9766 ir-rgb 640 360 30 5 /dev/dri/renderD128
 ./realsense-nhve-h264 192.168.0.125 9766 color 640 360 30 50 /dev/dri/renderD128 500000```
+```
 
 Stream Realsense:
 - color/infrared/infrared-rgb with HEVC Main
 - depth with HEVC Main10
 
-
 ```bash
-Usage: ./realsense-nhve-hevc <host> <port> <color/ir/ir-rgb/depth> <width> <height> <framerate> <seconds> [device] [bitrate] [depth units] [json]
+Usage: ./realsense-nhve-hevc
+       <host> <port>
+       <color/ir/ir-rgb/depth>
+       <width> <height> <framerate> <seconds>
+       [device] [bitrate] [depth units] [json]
 
 examples:
 ./realsense-nhve-hevc 127.0.0.1 9766 color 640 360 30 5
@@ -125,7 +133,11 @@ Stream Realsense D415/D435/D455/L515:
 - depth with HEVC Main10, infrared or infrared rgb with HEVC
 
 ```bash
-Usage: ./realsense-nhve-depth-ir <host> <port> <ir/ir-rgb> <width> <height> <framerate> <seconds> [device] [bitrate_depth] [bitrate_ir] [depth units] [json]
+Usage: ./realsense-nhve-depth-ir
+       <host> <port>
+       <ir/ir-rgb>
+       <width> <height> <framerate> <seconds>
+       [device] [bitrate_depth] [bitrate_ir] [depth units] [json]
 
 examples: 
 ./realsense-nhve-depth-ir 127.0.0.1 9766 ir 640 360 30 5
@@ -139,6 +151,7 @@ examples:
 ./realsense-nhve-depth-ir 192.168.0.100 9768 ir 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000125
 ./realsense-nhve-depth-ir 192.168.0.100 9768 ir-rgb 848 480 30 500 /dev/dri/renderD128 8000000 1000000 0.00003125
 ./realsense-nhve-depth-ir 192.168.0.100 9768 ir 640 480 30 500 /dev/dri/renderD128 8000000 1000000 0.0000390625 my_config.json```
+```
 
 Stream Realsense D415/D435/D455/L515:
 - depth with HEVC Main10, color with HEVC (aligned)
