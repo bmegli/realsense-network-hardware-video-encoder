@@ -13,7 +13,7 @@
  */
 
 // Robot control
-#include "robo.h"
+#include "robot.h"
 
 // Network Hardware Video Encoder
 #include "nhve.h"

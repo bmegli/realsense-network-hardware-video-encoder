@@ -29,7 +29,7 @@ add_executable(realsense-nhve-depth-color rnhve_depth_color.cpp)
 target_include_directories(realsense-nhve-depth-color PRIVATE network-hardware-video-encoder)
 target_link_libraries(realsense-nhve-depth-color nhve realsense2)
 
-add_executable(robo-rnhve robo_rnhve.cpp robo.cpp)
-target_include_directories(robo-rnhve PRIVATE network-hardware-video-encoder network-hardware-video-encoder/minimal-latency-streaming-protocol roboclaw vmu931)
-target_link_libraries(robo-rnhve nhve realsense2 roboclaw vmu931 Threads::Threads)
+add_executable(robot-rnhve robot_rnhve.cpp robot.cpp)
+target_include_directories(robot-rnhve PRIVATE network-hardware-video-encoder network-hardware-video-encoder/minimal-latency-streaming-protocol roboclaw vmu931)
+target_link_libraries(robot-rnhve nhve realsense2 roboclaw vmu931 Threads::Threads)
 
