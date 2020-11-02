@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include <limits.h> //INT_MAX
+#include <cstring> //memcpy
 
 using namespace std;
 
@@ -13,14 +14,12 @@ const uint8_t MIDDLE_MOTOR_ADDRESS=0x81;
 const uint8_t REAR_MOTOR_ADDRESS=0x82;
 const int32_t MOTOR_ACCELERATION=6000;
 
-// temporary control packet, subject to change
 struct drive_packet
 {
-	uint64_t timestamp_us;
 	int16_t command;
 	int16_t left;
-	int16_t right;	
-};
+	int16_t right;
+} __attribute__((packed));
 
 struct dead_reconning_packet
 {
@@ -160,6 +159,8 @@ void Robot::controlLoop()
 {
 	int error;
 	const mlsp_frame *streamer_frame;
+	drive_packet drive_cmd;
+
 
 	while(m_keepWorking)
 	{
@@ -173,8 +174,16 @@ void Robot::controlLoop()
 				
 			break; //error
 		}			
+
+		if(streamer_frame->size != sizeof(drive_packet))
+		{
+			cerr << "robot: ignoring invalid size message" << endl;
+			continue;
+		}
+
+		memcpy(&drive_cmd, streamer_frame->data, sizeof(drive_cmd));
 		
-		cerr << "got message" << endl;
+		cerr << "got message c " << drive_cmd.command << " left " << drive_cmd.left <<  " right " << drive_cmd.right << endl;
 	}
 	
 	cerr << "robot: finished thread" << endl;

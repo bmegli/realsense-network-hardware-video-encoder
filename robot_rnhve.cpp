@@ -27,6 +27,8 @@
 #include <iostream>
 #include <cassert>
 
+ #include <unistd.h> //temp sleep
+
 using namespace std;
 
 int hint_user_on_failure(char *argv[]);
@@ -76,6 +78,9 @@ int main(int argc, char* argv[])
 	}
 
 	robot.startThread();
+
+	sleep(10);
+
 	robot.stopThread();
 
 	return 0;
