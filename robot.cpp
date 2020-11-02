@@ -159,8 +159,6 @@ void Robot::controlLoop()
 {
 	int error;
 	const mlsp_frame *streamer_frame;
-	drive_packet drive_cmd;
-
 
 	while(m_keepWorking)
 	{
@@ -168,27 +166,56 @@ void Robot::controlLoop()
 		{
 			if(error == MLSP_TIMEOUT)
 			{
-			//	stopMotors(m_rc);
+				stopMotors(m_rc);
 				continue;
 			}
-				
 			break; //error
-		}			
-
-		if(streamer_frame->size != sizeof(drive_packet))
-		{
-			cerr << "robot: ignoring invalid size message" << endl;
-			continue;
 		}
 
-		memcpy(&drive_cmd, streamer_frame->data, sizeof(drive_cmd));
-		
-		cerr << "got message c " << drive_cmd.command << " left " << drive_cmd.left <<  " right " << drive_cmd.right << endl;
+		processDriveMessage(streamer_frame);
 	}
 	
 	cerr << "robot: finished thread" << endl;
 	
-	//stopMotors(m_rc);
+	stopMotors(m_rc);
+}
+
+void Robot::processDriveMessage(const mlsp_frame *streamer_frame)
+{
+	static int last_left=INT_MAX, last_right=INT_MAX;
+	drive_packet command;
+
+	if(streamer_frame->size != sizeof(drive_packet))
+	{
+		cerr << "robot: ignoring invalid size message" << endl;
+		return;
+	}
+
+	memcpy(&command, streamer_frame->data, sizeof(drive_packet));
+
+	if(command.command == KEEPALIVE)
+		return;
+
+	if(command.command != SET_SPEED)
+	{
+		cerr << "robot: unknown command: " << command.command << endl;
+		return;
+	}
+
+	int16_t l = command.left, r = command.right;
+	bool ok = true;
+
+	if(l == last_left && r == last_right)
+		return;
+
+	ok &= roboclaw_speed_accel_m1m2(m_rc, FRONT_MOTOR_ADDRESS, r, l, MOTOR_ACCELERATION) == ROBOCLAW_OK;
+	ok &= roboclaw_speed_accel_m1m2(m_rc, MIDDLE_MOTOR_ADDRESS, r, l,  MOTOR_ACCELERATION) == ROBOCLAW_OK;
+	ok &= roboclaw_speed_accel_m1m2(m_rc, REAR_MOTOR_ADDRESS, r, l, MOTOR_ACCELERATION) == ROBOCLAW_OK;	
+
+	if(ok)
+		last_left = l, last_right = r;
+	else
+		cerr << "robot: failed to set motor speed, no reaction implemented" << endl;
 }
 
 void Robot::startThread()
@@ -205,34 +232,6 @@ void Robot::stopThread()
 		return;
 	m_keepWorking = false;
 	m_thread.join();
-}
-
-void process_message(const drive_packet &packet, roboclaw *rc)
-{
-	static int last_left=INT_MAX, last_right=INT_MAX;
-	
-	if(packet.command == KEEPALIVE)
-		return;
-		
-	if(packet.command == SET_SPEED)
-	{		
-		int16_t l = packet.left, r = packet.right;
-		bool ok = true;
-
-		if(l == last_left && r == last_right)
-			return;
-
-		ok &= roboclaw_speed_accel_m1m2(rc, FRONT_MOTOR_ADDRESS, r, l, MOTOR_ACCELERATION) == ROBOCLAW_OK;
-		ok &= roboclaw_speed_accel_m1m2(rc, MIDDLE_MOTOR_ADDRESS, r, l,  MOTOR_ACCELERATION) == ROBOCLAW_OK;
-		ok &= roboclaw_speed_accel_m1m2(rc, REAR_MOTOR_ADDRESS, r, l, MOTOR_ACCELERATION) == ROBOCLAW_OK;	
-
-		if(ok)
-			last_left = l, last_right = r;
-		else
-			cerr << "robot: failed to set motor speed, no reaction implemented" << endl;
-	}
-	else
-		cerr << "robot: unknown command: " << packet.command << endl;
 }
 
 int get_encoders(roboclaw *rc, dead_reconning_packet *packet)

@@ -29,10 +29,12 @@ private:
 	bool initMotors(const char *tty, int baudrate);
 	void closeMotors();
 	void stopMotors(roboclaw *rc);
-	
+
 	bool initIMU(const char *tty);
 	void closeIMU();
-	
+
 	bool initNetwork(uint16_t port, int timeout_ms);
 	void closeNetwork();
+
+	void processDriveMessage(const mlsp_frame *msg);
 };
