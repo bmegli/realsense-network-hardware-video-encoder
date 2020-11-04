@@ -64,7 +64,7 @@ const char *ROBOCLAW_TTY = "/dev/ttyXRUSB0";
 const int ROBOCLAW_BAUDRATE = 460800;
 const char *VMU_TTY = "/dev/ttyACM0";
 const uint16_t ROBOT_PORT = 10000;
-const int ROBOT_TIMEOUT_MS = 100;
+const int ROBOT_TIMEOUT_MS = 200;
 
 int main(int argc, char* argv[])
 {	
