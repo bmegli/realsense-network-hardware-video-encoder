@@ -78,12 +78,6 @@ int main(int argc, char* argv[])
 	}
 
 	robot.startThread();
-
-	sleep(120);
-
-	robot.stopThread();
-
-	return 0;
 	
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
@@ -106,6 +100,8 @@ int main(int argc, char* argv[])
 	bool status = main_loop(user_input, realsense, streamer);
 
 	nhve_close(streamer);
+
+	robot.stopThread();
 
 	if(status)
 		cout << "Finished successfully." << endl;
