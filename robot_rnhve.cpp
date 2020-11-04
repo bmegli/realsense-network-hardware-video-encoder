@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
 	robot.startThread();
 
-	sleep(10);
+	sleep(120);
 
 	robot.stopThread();
 

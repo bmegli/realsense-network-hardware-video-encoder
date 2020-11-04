@@ -131,17 +131,17 @@ bool Robot::init(const char* motor_tty, int baudrate,
 	/*
 	if(!initIMU(imu_tty))
 		return false;
-	
+	*/
 	if(!initMotors(motor_tty, baudrate))
 	{
-		closeIMU();
+		//closeIMU();
 		return false;
 	}
-	*/
+	
 	if(!initNetwork(port, timeout_ms))
 	{
 		//closeIMU();
-		//closeMotors();
+		closeMotors();
 		return false;
 	}
 	
@@ -152,7 +152,7 @@ void Robot::close()
 {
 	closeNetwork();
 	closeMotors();
-	closeIMU();
+	//closeIMU();
 }
 
 void Robot::controlLoop()
