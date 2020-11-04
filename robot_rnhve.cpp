@@ -70,15 +70,7 @@ int main(int argc, char* argv[])
 {	
 	//prepare Robot
 	Robot robot;
-	
-	if(!robot.init(ROBOCLAW_TTY, ROBOCLAW_BAUDRATE, VMU_TTY, ROBOT_PORT, ROBOT_TIMEOUT_MS ))
-	{
-		cerr << "failed to initialize robot" << endl;
-		return 1;
-	}
-
-	robot.startThread();
-	
+		
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
 	struct nhve_hw_config hw_configs[2] = { {0}, {0} };
@@ -96,6 +88,14 @@ int main(int argc, char* argv[])
 
 	if( (streamer = nhve_init(&net_config, hw_configs, 2, 0)) == NULL )
 		return hint_user_on_failure(argv);
+
+	if(!robot.init(ROBOCLAW_TTY, ROBOCLAW_BAUDRATE, VMU_TTY, ROBOT_PORT, ROBOT_TIMEOUT_MS ))
+	{
+		cerr << "failed to initialize robot" << endl;
+		return 1;
+	}
+
+	robot.startThread();
 
 	bool status = main_loop(user_input, realsense, streamer);
 
