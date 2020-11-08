@@ -98,6 +98,8 @@ bool Robot::initIMU(const char* tty)
 		vmu_close(m_vmu);
 		return false;
 	}
+
+	return true;
 }
 
 void Robot::closeIMU()
