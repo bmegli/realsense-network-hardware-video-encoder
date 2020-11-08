@@ -63,17 +63,17 @@ const int DEPTH = 0; //depth hardware encoder index
 const int IR = 1; //ir hardware encoder index
 
 //Robot
-const char *ROBOCLAW_TTY = "/dev/ttyXRUSB0"; 
+const char *ROBOCLAW_TTY = "/dev/ttyXRUSB0";
 const int ROBOCLAW_BAUDRATE = 460800;
 const char *VMU_TTY = "/dev/ttyACM0";
 const uint16_t ROBOT_PORT = 10000;
-const int ROBOT_TIMEOUT_MS = 200;
+const int ROBOT_TIMEOUT_MS = 500;
 
 int main(int argc, char* argv[])
-{	
+{
 	//prepare Robot
 	Robot robot;
-		
+
 	//prepare NHVE Network Hardware Video Encoder
 	struct nhve_net_config net_config = {0};
 	struct nhve_hw_config hw_configs[2] = { {0}, {0} };
@@ -221,7 +221,7 @@ void init_realsense(rs2::pipeline& pipe, input_args& input)
 	rs2::pipeline_profile profile = pipe.start(cfg);
 
 	init_realsense_depth(pipe, cfg, input);
-	
+
 	print_intrinsics(profile, RS2_STREAM_DEPTH);
 }
 
