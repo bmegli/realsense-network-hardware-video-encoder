@@ -401,4 +401,5 @@ void Robot::odometryUpdate(int32_t left, int32_t right,
 	m_timestamp = timestamp_us;
 
 	cout << "position = " << m_position << endl;
+	cout << "heading = " << m_heading << endl;
 }
