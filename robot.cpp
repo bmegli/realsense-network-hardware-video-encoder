@@ -145,8 +145,10 @@ int Robot::getQuaternion(float *w, float *x, float *y, float *z) const
 	//quaterion as in Unity coordinate system
 	*w = quat_data[status].w;
 	*x = quat_data[status].x;
-	*y = -quat_data[status].z;
-	*z = quat_data[status].y;
+	*y = quat_data[status].y;
+	*z = quat_data[status].z;
+	//*y = -quat_data[status].z;
+	//*z = quat_data[status].y;
 
 	return 0;
 }
