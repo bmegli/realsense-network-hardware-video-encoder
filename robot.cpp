@@ -386,10 +386,10 @@ void Robot::odometryUpdate(int32_t left, int32_t right,
 	float displacement_m = (ldiff + rdiff) * distance_per_encoder_count_mm / 2.0f / MM_IN_M;
 
 	Eigen::Quaternionf heading_new(w, x, y, z);
-	Eigen::Quaternionf heading_avg = m_heading.slerp(0.5f, heading_new);
+	//Eigen::Quaternionf heading_avg = m_heading.slerp(0.5f, heading_new);
 
 	Eigen::Vector3f forward(0.0f, 0.0f, 1.0f);
-	Eigen::Vector3f ahead = heading_avg * forward;
+	Eigen::Vector3f ahead = heading_new * forward;
 
 	Eigen::Vector3f displacement = displacement_m * ahead;
 
