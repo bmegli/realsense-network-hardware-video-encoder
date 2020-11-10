@@ -388,7 +388,7 @@ void Robot::odometryUpdate(int32_t left, int32_t right,
 	Eigen::Quaternionf heading_new(w, x, y, z);
 	//Eigen::Quaternionf heading_avg = m_heading.slerp(0.5f, heading_new);
 
-	Eigen::Vector3f forward(0.0f, 1f, 0.0f);
+	Eigen::Vector3f forward(0.0f, 1.0f, 0.0f);
 	Eigen::Vector3f ahead = heading_new * forward;
 
 	cout << "forward = " << forward << endl;
