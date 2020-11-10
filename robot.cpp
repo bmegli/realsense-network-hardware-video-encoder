@@ -388,7 +388,7 @@ void Robot::odometryUpdate(int32_t left, int32_t right,
 	Eigen::Quaternionf heading_new(w, x, y, z);
 	//Eigen::Quaternionf heading_avg = m_heading.slerp(0.5f, heading_new);
 
-	Eigen::Vector3f forward(0.0f, 0.0f, 1.0f);
+	Eigen::Vector3f forward(0.0f, 0.1f, 0.0f);
 	Eigen::Vector3f ahead = heading_new * forward;
 
 	Eigen::Vector3f displacement = displacement_m * ahead;
@@ -401,5 +401,5 @@ void Robot::odometryUpdate(int32_t left, int32_t right,
 	m_timestamp = timestamp_us;
 
 	cout << "position = " << m_position << endl;
-	cout << "heading = " << m_heading.w() << " orientation " << m_heading.vec() << endl;
+	//cout << "heading = " << m_heading.w() << " orientation " << m_heading.vec() << endl;
 }
