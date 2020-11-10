@@ -1,8 +1,11 @@
 #include "robot.h"
 #include "mlsp.h"
 
+#include <Eigen/Geometry>
+
 #include <iostream>
 #include <thread>
+#include <cmath> //M_PI
 #include <climits> //INT_MAX
 #include <cstring> //memcpy
 #include <cassert> // assert
@@ -34,9 +37,19 @@ struct odometry_packet
 	float z;
 };
 
+struct physics
+{
+	float wheel_diameter_mm;
+	float encoder_counts_per_rotation;
+};
+
 const int DEAD_RECONNING_PACKET_BYTES=32; //8 + 2*4 + 4*4
 const int CONTROL_PACKET_BYTES = 18; //8 + 5*2 = 18 bytes
 enum Commands {KEEPALIVE=0, SET_SPEED=1, TO_POSITION_WITH_SPEED=2};
+
+Robot::Robot(): m_position(0.0f,0.0f,0.0f), m_heading(1.0f, 0.0f, 0.0f, 0.0f)
+{
+}
 
 bool Robot::initMotors(const char* tty, int baudrate)
 {
@@ -65,7 +78,6 @@ bool Robot::initMotors(const char* tty, int baudrate)
 	cout << "robot: battery voltage is" << voltage/10.0 << endl;
 
 	return true;
-
 }
 
 void Robot::closeMotors()
@@ -203,7 +215,7 @@ void Robot::controlLoop()
 
 	odometry_packet odometry;
 	uint64_t command_timestamp_us = timestampUs();
-	uint64_t TIMEOUT_US=500*1000; //hardcoded 500 ms
+	uint64_t TIMEOUT_US=500*1000; //hardcoded 500 msee
 
 	while(m_keepWorking)
 	{
@@ -230,6 +242,13 @@ void Robot::controlLoop()
 					break; //consider if it is possible to not get data
 				if(getEncoders(&odometry.position_left, &odometry.position_right) == -1)
 					break;
+
+				if(!m_timestamp)
+				{
+					m_timestamp = odometry.timestamp_us;
+					m_left = odometry.position_left;
+					m_right = odometry.position_right;
+				}
 			}
 
 			if( FD_ISSET(network_fd, &rfds) )
@@ -260,8 +279,13 @@ void Robot::controlLoop()
 		}
 
 		if( FD_ISSET(imu_fd, &rfds) )
+		{
 			cout << "l=" << odometry.position_left << " r=" << odometry.position_right << endl;
-			//SendDeadReconningPacketUDP(client_udp, destination_udp, odometry_packet);
+			odometryUpdate(odometry.position_left, odometry.position_right,
+			               odometry.w, odometry.x, odometry.y, odometry.z,
+								odometry.timestamp_us);
+		}
+
 	}
 
 	cerr << "robot: finished thread" << endl;
@@ -343,4 +367,36 @@ uint64_t Robot::timestampUs() const
 	timespec ts;
 	assert(clock_gettime(CLOCK_MONOTONIC, &ts) == 0);
 	return (uint64_t)ts.tv_sec*1000000 + (uint64_t)ts.tv_nsec / 1000;
+}
+
+void Robot::odometryUpdate(int32_t left, int32_t right,
+	                        float w, float x, float y, float z,
+									uint64_t timestamp_us)
+{
+	physics p {120.0f, 1196.8f};
+	const float MM_IN_M=1000.0f;
+
+	// Calculate the linear displacement since last packet
+	float distance_per_encoder_count_mm = M_PI * p.wheel_diameter_mm / p.encoder_counts_per_rotation;
+	float ldiff = left - m_left;
+	float rdiff = right - m_right;
+
+	float displacement_m = (ldiff + rdiff) * distance_per_encoder_count_mm / 2.0f / MM_IN_M;
+
+	Eigen::Quaternionf heading_new(w, x, y, z);
+	Eigen::Quaternionf heading_avg = m_heading.slerp(0.5f, heading_new);
+
+	Eigen::Vector3f forward(0.0f, 0.0f, 1.0f);
+	Eigen::Vector3f ahead = heading_avg * forward;
+
+	Eigen::Vector3f displacement = displacement_m * ahead;
+
+	m_position = m_position + displacement;
+	m_heading = heading_new;
+
+	m_left = left;
+	m_right = right;
+	m_timestamp = timestamp_us;
+
+	cout << "position = " << m_position << endl;
 }

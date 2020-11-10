@@ -6,6 +6,7 @@ project(
 )
 
 find_package (Threads REQUIRED)
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 # build the libraries tree
 add_subdirectory(network-hardware-video-encoder)
@@ -31,5 +32,5 @@ target_link_libraries(realsense-nhve-depth-color nhve realsense2)
 
 add_executable(robot-rnhve robot_rnhve.cpp robot.cpp)
 target_include_directories(robot-rnhve PRIVATE network-hardware-video-encoder network-hardware-video-encoder/minimal-latency-streaming-protocol roboclaw vmu931)
-target_link_libraries(robot-rnhve nhve realsense2 roboclaw vmu931 Threads::Threads)
+target_link_libraries(robot-rnhve nhve realsense2 roboclaw vmu931 Threads::Threads Eigen3::Eigen)
 
