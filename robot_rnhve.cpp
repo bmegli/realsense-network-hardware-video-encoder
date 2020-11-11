@@ -48,7 +48,7 @@ struct input_args
 	bool needs_postprocessing;
 };
 
-bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer);
+bool main_loop(const input_args& input, Robot &robot, rs2::pipeline& realsense, nhve *streamer);
 void process_depth_data(const input_args &input, rs2::depth_frame &depth);
 
 void init_realsense(rs2::pipeline& pipe, input_args& input);
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
 
 	robot.startThread();
 
-	bool status = main_loop(user_input, realsense, streamer);
+	bool status = main_loop(user_input, robot, realsense, streamer);
 
 	nhve_close(streamer);
 
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 }
 
 //true on success, false on failure
-bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer)
+bool main_loop(const input_args& input, Robot& robot, rs2::pipeline& realsense, nhve *streamer)
 {
 	const int frames = input.seconds * input.framerate;
 	int f;
@@ -125,9 +125,16 @@ bool main_loop(const input_args& input, rs2::pipeline& realsense, nhve *streamer
 	for(f = 0; f < frames; ++f)
 	{
 		rs2::frameset frameset = realsense.wait_for_frames();
+		
+		IEOPose pose = robot.getPoseThreadSafe();
+		cout.precision(2);
+		cout << "[" << pose.timestamp_us << "] [" <<
+		        pose.position_xyz[0] << ", " << pose.position_xyz[1] << ", " << pose.position_xyz[2] <<
+		        "]" << endl;
+		
 		rs2::depth_frame depth = frameset.get_depth_frame();
 		rs2::video_frame ir = frameset.get_infrared_frame();
-
+		
 		const int w = depth.get_width();
 		const int h = depth.get_height();
 		const int depth_stride=depth.get_stride_in_bytes();

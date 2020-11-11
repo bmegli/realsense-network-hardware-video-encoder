@@ -1,11 +1,11 @@
 #include "roboclaw.h"
 #include "vmu931.h"
 #include "mlsp.h"
-
-#include <Eigen/Geometry>
+#include "ieo.h"
 
 #include <stdint.h>
 #include <thread>
+#include <mutex>
 
 class Robot
 {
@@ -21,21 +21,18 @@ public:
 	void stopThread();
 
 	void controlLoop();
-
+	
+	IEOPose getPoseThreadSafe();
 private:
 	roboclaw *m_rc = nullptr;
 	vmu *m_vmu = nullptr;
 	mlsp *m_streamer = nullptr;
 
+	IEO m_odometry;
+	std::mutex m_odometryMutex;
+
 	std::thread m_thread;
 	bool m_keepWorking = false;
-
-	int32_t m_left;
-	int32_t m_right;
-
-	Eigen::Vector3f m_position;
-	Eigen::Quaternionf m_heading;
-	uint64_t m_timestamp = 0;
 
 	bool initMotors(const char *tty, int baudrate);
 	void closeMotors();
@@ -50,10 +47,4 @@ private:
 	void closeNetwork();
 
 	void processDriveMessage(const mlsp_frame *msg);
-
-	void odometryUpdate(int32_t left, int32_t right,
-	                    float w, float x, float y, float z,
-							  uint64_t timestamp_us);
-
-	uint64_t timestampUs() const;
 };
