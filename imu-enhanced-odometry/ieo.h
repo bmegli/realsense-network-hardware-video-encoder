@@ -9,7 +9,7 @@ struct IEOPose
 {
 	uint64_t timestamp_us;
 	float position_xyz[3]; //vector
-	float heading_wxyz[4]; //quaternion
+	float heading_xyzw[4]; //quaternion
 };
 
 class IEO

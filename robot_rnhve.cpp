@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 struct pose_data
 {
 	float position_xyz[3]; //vector
-	float heading_wxyz[4]; //quaternion
+	float heading_xyzw[4]; //quaternion
 } __attribute__((packed));
 
 //true on success, false on failure
@@ -189,8 +189,16 @@ bool main_loop(const input_args& input, Robot& robot, rs2::pipeline& realsense, 
 
 		// temp - encode pose data, ignore big and little endian
 		pose_data pdata;
-		memcpy(pdata.position_xyz, pose.position_xyz, sizeof(pdata.position_xyz));
-		memcpy(pdata.heading_wxyz, pose.heading_wxyz, sizeof(pdata.heading_wxyz));
+		//make it Unity compatible
+		pdata.position_xyz[0] = pose.position_xyz[0];  //X := X
+		pdata.position_xyz[1] = -pose.position_xyz[2]; //Y := -Z
+		pdata.position_xyz[2] = pose.position_xyz[1]; //Z := Y
+
+		pdata.heading_xyzw[0] = pose.heading_xyzw[0];
+		pdata.heading_xyzw[1] = - pose.heading_xyzw[2];
+		pdata.heading_xyzw[2] = pose.heading_xyzw[1];
+		pdata.heading_xyzw[3] = pose.heading_xyzw[3];
+
 		frame[2].linesize[0] = sizeof(pose_data);
 		frame[2].data[0] = (uint8_t*) &pdata;
 

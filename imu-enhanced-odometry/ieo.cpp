@@ -66,6 +66,6 @@ IEOPose IEO::getPose() const
 {
 	IEOPose pose {m_timestamp,
 					 {m_position[0], m_position[1], m_position[2]},
-	             {m_heading.w(), m_heading.x(), m_heading.y(), m_heading.z()} };
+	             {m_heading.x(), m_heading.y(), m_heading.z(), m_heading.w()} };
 	return pose;
 }
