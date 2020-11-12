@@ -89,7 +89,7 @@ int main(int argc, char* argv[])
 
 	init_realsense(realsense, user_input);
 
-	if( (streamer = nhve_init(&net_config, hw_configs, 2, 0)) == NULL )
+	if( (streamer = nhve_init(&net_config, hw_configs, 2, 1)) == NULL )
 		return hint_user_on_failure(argv);
 
 	if(!robot.init(ROBOCLAW_TTY, ROBOCLAW_BAUDRATE, VMU_TTY, ROBOT_PORT, ROBOT_TIMEOUT_MS ))
@@ -112,12 +112,18 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+struct pose_data
+{
+	float position_xyz[3]; //vector
+	float heading_wxyz[4]; //quaternion
+} __attribute__((packed));
+
 //true on success, false on failure
 bool main_loop(const input_args& input, Robot& robot, rs2::pipeline& realsense, nhve *streamer)
 {
 	const int frames = input.seconds * input.framerate;
 	int f;
-	nhve_frame frame[2] = { {0}, {0} };
+	nhve_frame frame[3] = { {0}, {0}, {0} };
 
 	uint16_t *depth_uv = NULL; //data of dummy color plane for P010LE
 	uint8_t *ir_uv = NULL; //data of dummy color plane for NV12 for Realsense infrared
@@ -127,10 +133,6 @@ bool main_loop(const input_args& input, Robot& robot, rs2::pipeline& realsense, 
 		rs2::frameset frameset = realsense.wait_for_frames();
 		
 		IEOPose pose = robot.getPoseThreadSafe();
-		cout.precision(2);
-		cout << "[" << pose.timestamp_us << "] [" <<
-		        pose.position_xyz[0] << ", " << pose.position_xyz[1] << ", " << pose.position_xyz[2] <<
-		        "]" << endl;
 		
 		rs2::depth_frame depth = frameset.get_depth_frame();
 		rs2::video_frame ir = frameset.get_infrared_frame();
@@ -168,7 +170,7 @@ bool main_loop(const input_args& input, Robot& robot, rs2::pipeline& realsense, 
 
 		if(nhve_send(streamer, &frame[0], 0) != NHVE_OK)
 		{
-			cerr << "failed to send" << endl;
+			cerr << "failed to send depth" << endl;
 			break;
 		}
 
@@ -181,7 +183,20 @@ bool main_loop(const input_args& input, Robot& robot, rs2::pipeline& realsense, 
 
 		if(nhve_send(streamer, &frame[1], 1) != NHVE_OK)
 		{
-			cerr << "failed to send" << endl;
+			cerr << "failed to send color" << endl;
+			break;
+		}
+
+		// temp - encode pose data, ignore big and little endian
+		pose_data pdata;
+		memcpy(pdata.position_xyz, pose.position_xyz, sizeof(pdata.position_xyz));
+		memcpy(pdata.heading_wxyz, pose.heading_wxyz, sizeof(pdata.heading_wxyz));
+		frame[2].linesize[0] = sizeof(pose_data);
+		frame[2].data[0] = (uint8_t*) &pdata;
+
+		if(nhve_send(streamer, &frame[2], 2) != NHVE_OK)
+		{
+			cerr << "failed to send pose" << endl;
 			break;
 		}
 	}
