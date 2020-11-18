@@ -59,9 +59,7 @@ bool Robot::initMotors(const char* tty, int baudrate)
 		return false;
 	}
 
-	ok &= roboclaw_main_battery_voltage(m_rc, FRONT_MOTOR_ADDRESS, &voltage) == ROBOCLAW_OK;
 	ok &= roboclaw_main_battery_voltage(m_rc, MIDDLE_MOTOR_ADDRESS, &voltage) == ROBOCLAW_OK;
-	ok &= roboclaw_main_battery_voltage(m_rc, REAR_MOTOR_ADDRESS, &voltage) == ROBOCLAW_OK;
 
 	if(!ok)
 	{
@@ -83,9 +81,7 @@ void Robot::closeMotors()
 void Robot::stopMotors(roboclaw *rc)
 {
 	bool ok=true;
-	ok &= roboclaw_duty_m1m2(rc, FRONT_MOTOR_ADDRESS, 0, 0) == ROBOCLAW_OK;
 	ok &= roboclaw_duty_m1m2(rc, MIDDLE_MOTOR_ADDRESS, 0, 0) == ROBOCLAW_OK;
-	ok &= roboclaw_duty_m1m2(rc, REAR_MOTOR_ADDRESS, 0, 0) == ROBOCLAW_OK;
 
 	if(!ok)
 		cerr << "robot: unable to stop motors" << endl;
@@ -317,9 +313,7 @@ void Robot::processDriveMessage(const mlsp_frame *streamer_frame)
 	if(l == last_left && r == last_right)
 		return;
 
-	ok &= roboclaw_speed_accel_m1m2(m_rc, FRONT_MOTOR_ADDRESS, r, l, MOTOR_ACCELERATION) == ROBOCLAW_OK;
 	ok &= roboclaw_speed_accel_m1m2(m_rc, MIDDLE_MOTOR_ADDRESS, r, l,  MOTOR_ACCELERATION) == ROBOCLAW_OK;
-	ok &= roboclaw_speed_accel_m1m2(m_rc, REAR_MOTOR_ADDRESS, r, l, MOTOR_ACCELERATION) == ROBOCLAW_OK;	
 
 	if(ok)
 		last_left = l, last_right = r;
