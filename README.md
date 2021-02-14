@@ -44,7 +44,7 @@ This program depends on:
 - [librealsense2](https://github.com/IntelRealSense/librealsense) 
 - [NHVE Network Hardware Video Encoder](https://github.com/bmegli/network-hardware-video-encoder)
 	- [HVE Hardware Video Encoder](https://github.com/bmegli/hardware-video-encoder)
-		- FFmpeg `avcodec` and `avutil` (at least 3.4 version)
+		- FFmpeg `avcodec`, `avutil`, `avfilter` (at least 3.4 version)
 	- [MLSP Minimal Latency Streaming Protocol](https://github.com/bmegli/minimal-latency-streaming-protocol)
 
 Install RealSense™ SDK 2.0 as described on [github](https://github.com/IntelRealSense/librealsense) 
@@ -61,7 +61,7 @@ Tested on Ubuntu 18.04.
 # update package repositories
 sudo apt-get update 
 # get avcodec and avutil
-sudo apt-get install ffmpeg libavcodec-dev libavutil-dev
+sudo apt-get install ffmpeg libavcodec-dev libavutil-dev libavfilter-dev
 # get compilers and make 
 sudo apt-get install build-essential
 # get cmake - we need to specify libcurl4 for Ubuntu 18.04 dependencies problem
@@ -196,7 +196,7 @@ This is similiar to LGPL but more permissive:
 Like in LGPL, if you modify the code, you have to make your changes available.
 Making a github fork with your changes satisfies those requirements perfectly.
 
-Since you are linking to FFmpeg libraries consider also `avcodec` and `avutil` licensing.
+Since you are linking to FFmpeg libraries consider also `avcodec`, `avutil` and `avfilter` licensing.
 
 ## Additional information
 
